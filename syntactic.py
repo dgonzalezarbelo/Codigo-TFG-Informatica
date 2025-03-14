@@ -14,6 +14,7 @@ K = 4 # Tamaño del clique
 A = N * (N-1) // 2 # Aristas en el grafo
 A_CLIQUE = K * (K-1) // 2 # Aristas en un cliqué de tamaño K
 CLAUSULAS = math.comb(N, K)
+M_CLIQUE = CLAUSULAS * A_CLIQUE # Puntuación de la función Cliqué
 subsets = []
 
 # Genera los subconjuntnso de tamaño sz a partir de la variable ini

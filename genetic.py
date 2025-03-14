@@ -101,7 +101,7 @@ def poblacion_inicial(ini, fin, n, puerta):
     en el rango [ini, fin] combinadas con la puerta recibida como argumento
     '''
     ret = []
-    for _ in range(2 * n):
+    for i in range(1, n + 1):
         punt1 = random.randint(ini, fin)
         punt2 = random.randint(ini, fin)
         f1 = get_random_fnd_puntuacion(punt1)
@@ -113,7 +113,19 @@ def poblacion_inicial(ini, fin, n, puerta):
         else:
             raise ValueError("La puerta debe ser OR o AND")
         ret.append([[f1, punt1], [f2, punt2], incremento])
+        if i % 10 == 0:
+            print(f"{i} parejas de funciones generadas")
     return ret
+
+def mutacion_intercambio(f, g):
+    '''Función que intercambia dos cláusulas aleatorias de dos FNDs'''
+    idx1 = random.randint(0, len(f) - 1)
+    idx2 = random.randint(0, len(g) - 1)
+
+    # Intercambio de cláusulas
+    f[idx1], g[idx2] = g[idx2], f[idx1]
+
+    return f, g
 
 def genetico(ini, fin):
     '''
@@ -147,50 +159,88 @@ def genetico(ini, fin):
     '''
 
     PUERTAS = ['OR', 'AND']
-    PUERTAS_HABILITADAS = ['OR', 'AND'] # Por si no queremos usar todas en la simulación
+    PUERTAS_HABILITADAS = ['AND'] # Por si no queremos usar todas en la simulación
     COMBINACIONES = {'OR': combOR, 'AND': combAND_with_not}
-    ITERACIONES = {'OR': 50, 'AND': 50} # Iteraciones de cada puerta
-    POPULATION_SIZE = 300
+    ITERACIONES = {'OR': 15, 'AND': 15} # Iteraciones de cada puerta
+    # POPULATION_SIZE = 300
+    POPULATION_SIZE = 30
     NUM_GENERATIONS = 300
     T = 4   # Tamaño de los torneos para la selección
-    CLAVE = lambda gen: -gen[2]  # Tomamos máximos según el incremento de la métrica (negativo para tomar el máximo)
+    CLAVE = lambda gen: gen[2]  # Tomamos máximos según el incremento de la métrica (negativo para tomar el máximo)
+    CLAVE_NEG = lambda gen: -CLAVE(gen)
+    MAX_PAUSA = 15  # Máximo número de iteraciones que permitimios sin mejora
+    PROB_MUT = 0.05 # Probabilidad de mutación
 
-    xs, ys = {}, {}   # Para graficar los resultados
+    xs, ys, zs = {}, {}, {}   # Para graficar los resultados
     for p in PUERTAS_HABILITADAS:
-        xs[p], ys[p] = [], []
+        xs[p], ys[p], zs[p] = [], [], []
 
+    mutaciones, mutaciones_fallidas = 0, 0
+    tiempo, generaciones_computadas = 0, 0
+
+    max_m, mejor_incr, prev_incr, it_sin_mejora = {}, {}, {}, {}
+    for p in PUERTAS_HABILITADAS:
+        max_m[p], mejor_incr[p], prev_incr[p], it_sin_mejora[p] = 0, 0, 0, 0
+    
     # Lo primero que tenemos que conseguir es una población inicial para arrancar el algoritmo
     poblaciones = {}
     for p in PUERTAS_HABILITADAS:
         poblaciones[p] = poblacion_inicial(ini, fin, POPULATION_SIZE, p)
-    tiempo = 0
+    
     print("Poblaciones iniciales generadas")
     print("Iniciando algoritmo genético")
+
     for generation in range(1, NUM_GENERATIONS + 1):
         start_time = time.perf_counter()
+        generaciones_computadas += 1
+
+        prev_incr[p] = mejor_incr[p]
         for p in PUERTAS_HABILITADAS:
             for it in range(ITERACIONES[p]):
                 # Selección por torneo de T individuos
                 torneo1 = random.sample(poblaciones[p], T)
                 torneo2 = random.sample(poblaciones[p], T)
-                gen1 = max(torneo1, key=CLAVE)
-                gen2 = max(torneo2, key=CLAVE)
+                gen1 = max(torneo1, key=CLAVE_NEG)
+                gen2 = max(torneo2, key=CLAVE_NEG)
                 for i in range(2):
                     for j in range(2):
                         f, g = gen1[i][0], gen2[j][0]
                         m_f, m_g = gen1[i][1], gen2[j][1]
                         comb = COMBINACIONES[p](f, g)   # Juntamos las dos funciones a través de la puerta
-                        incremento = m(comb) - max(m_f, m_g)
+                        m_comb = m(comb)
+                        incremento = m_comb - max(m_f, m_g)
+                        max_m[p] = max(max_m[p], m_comb)
+                        mejor_incr[p] = max(incremento, mejor_incr[p])
+                        
                         gen = [[f, m_f], [g, m_g], incremento]
-                        xs[p].append(m_f); xs[p].append(m_g)
-                        ys[p].append(incremento); ys[p].append(incremento)
-                        # TODO Como estoy viendo parejas, igual tiene más sentido una representación 3D
-                        # TODO Debería limitar la longitud de las FNDs
-                        # Mutación TODO
-
-
                         poblaciones[p].append(gen)
-            poblaciones[p].sort(key=CLAVE)
+
+                        xs[p].append(m_f)
+                        ys[p].append(m_g)
+                        zs[p].append(incremento)
+                        
+                        # Mutación TODO Esto se puede encapsular mejor
+                        if random.uniform(0, 1) < PROB_MUT:
+                            mutaciones += 1
+                            fmut, gmut = mutacion_intercambio(f, g)
+                            m_fmut, m_gmut = m(fmut), m(gmut)
+                            if min(m_fmut, m_gmut) >= ini and max(m_fmut, m_gmut) <= fin:
+                                comb = COMBINACIONES[p](fmut, gmut)   # Juntamos las dos funciones a través de la puerta
+                                m_comb = m(comb)
+                                incremento = m_comb - max(m_fmut, m_gmut)
+                                max_m[p] = max(max_m[p], m_comb)
+                                mejor_incr[p] = max(incremento, mejor_incr[p])
+                                
+                                gen = [[fmut, m_fmut], [gmut, m_gmut], incremento]
+                                poblaciones[p].append(gen)
+
+                                xs[p].append(m_fmut)
+                                ys[p].append(m_gmut)
+                                zs[p].append(incremento)
+                            else:
+                                mutaciones_fallidas += 1
+
+            poblaciones[p].sort(key=CLAVE_NEG)
             poblaciones[p] = poblaciones[p][:POPULATION_SIZE]   # Nos quedamos con los mejores
 
         # Imprimir estadísticas
@@ -198,15 +248,52 @@ def genetico(ini, fin):
         tiempo += end_time - start_time
         print(f"Generación {generation}: Tiempo = {end_time - start_time:.2f} s")
         for p in PUERTAS_HABILITADAS:
-            print(f"    Mejor incremento con puerta {p}: {-CLAVE(max(poblaciones[p], key=CLAVE))}")
-        if generation == 10:
-            estimacion = (NUM_GENERATIONS - 10) * tiempo / 10
-            horas, minutos = estimacion / 3600, estimacion / 60
-            if horas >= 1:
-                print(f"Tiempo restante estimado: {horas:.3f} horas")
-            else:
-                print(f"Tiempo restante estimado: {minutos:.3f} minutos")
-        print()
-        # TODO Falta guardar datos externamente
+            print(f"    Mejor incremento con puerta {p}: {CLAVE(max(poblaciones[p], key=CLAVE))}")
+        print(f"Mutaciones: {mutaciones}")
+        print(f"Mutaciones fallidas: {mutaciones_fallidas}")
 
-genetico(1, 10)
+        for p in PUERTAS_HABILITADAS:
+            print(f"Mejor puntuación obtenida con puerta {p}: {max_m[p]}")
+
+        # Imprimimos una estimación del tiempo restante de cómputo
+        it_restantes = NUM_GENERATIONS - generation
+        estimacion = it_restantes * (tiempo / generation)
+        horas, minutos = estimacion / 3600, estimacion / 60
+        if horas >= 1:
+            print(f"Tiempo restante estimado: {horas:.3f} horas")
+        else:
+            print(f"Tiempo restante estimado: {minutos:.3f} minutos")
+        print()
+
+        # Comprobamos si se ha conseguido alguna mejora con alguna de las puertas
+        # Si todas llevan demasiadas iteraciones estancadas, paramos la ejecución,
+        # pues probablemente hemos convergido al máximo ya
+        # También comprobamos si se ha alcanzado la puntuación máxima
+        atascados = 0
+        for p in PUERTAS_HABILITADAS:
+            if mejor_incr[p] == prev_incr[p]:
+                it_sin_mejora[p] += 1
+                if it_sin_mejora[p] > MAX_PAUSA:
+                    atascados += 1
+            else:
+                it_sin_mejora[p] = 0
+
+        if atascados == len(PUERTAS_HABILITADAS):
+            print(f"{MAX_PAUSA} generaciones sin mejora. Terminando ejecución del algoritmo.")
+            print()
+            break
+
+        maximo_alcanzado = False
+        for p in PUERTAS_HABILITADAS:
+            if max_m[p] == M_CLIQUE:
+                maximo_alcanzado = True
+        if maximo_alcanzado:
+            print("Valor máximo de la métrica alcanzado")
+            break
+
+        # TODO Falta guardar datos externamente
+    print("Algoritmo genético completado")
+    print(f"Tiempo total de ejecución: {tiempo} segundos")
+    print(f"Generaciones totales computadas: {generaciones_computadas}")
+
+# genetico(100, 150)
