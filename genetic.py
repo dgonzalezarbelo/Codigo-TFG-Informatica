@@ -3,6 +3,7 @@ import time
 import math
 import random
 from debug import debug
+from debug import tam_total
 
 def particion_con_limite(suma, n, limite):
     '''Genera una lista de n números positivos menores o iguales a limite que suman exactamente suma'''
@@ -52,8 +53,8 @@ def get_random_fnd_puntuacion(puntuacion):
     # Teniendo en cuenta que la puntuación máxima de una cláusula es A_CLIQUE,
     # necesitamos, al menos, ceil(puntuacion // A_CLIQUE) cláusulas
     min_clausulas = (puntuacion + A_CLIQUE - 1) // A_CLIQUE
-    debug(f"min -> {min_clausulas}")
-    debug(f"max -> {max_clausulas}")
+    # debug(f"min -> {min_clausulas}")
+    # debug(f"max -> {max_clausulas}")
     while fallo:
         fallo = False
         num_clausulas = random.randint(min_clausulas, max_clausulas)
@@ -94,11 +95,31 @@ def get_random_fnd_puntuacion(puntuacion):
     assert(m(fnd) == puntuacion)
     return fnd
 
-def genetico():
+def poblacion_inicial(ini, fin, n, puerta):
+    '''
+    Función que devuelve una población inicial de tamaño n mezclando FNDs con puntuaciones
+    en el rango [ini, fin] combinadas con la puerta recibida como argumento
+    '''
+    ret = []
+    for _ in range(2 * n):
+        punt1 = random.randint(ini, fin)
+        punt2 = random.randint(ini, fin)
+        f1 = get_random_fnd_puntuacion(punt1)
+        f2 = get_random_fnd_puntuacion(punt2)
+        if puerta == 'OR':
+            incremento = m(combOR(f1, f2)) - max(punt1, punt2)
+        elif puerta == 'AND':
+            incremento = m(combAND_with_not(f1, f2)) - max(punt1, punt2)
+        else:
+            raise ValueError("La puerta debe ser OR o AND")
+        ret.append([[f1, punt1], [f2, punt2], incremento])
+    return ret
+
+def genetico(ini, fin):
     '''
     Algoritmo genético para buscar pares de funciones con puntuaciones en un rango dado
     que generen el máximo incremento de la métrica
-
+    
     Parámetros: TODO Dejar esto más limpio, por ahora solo lo pongo para ubicarme yo con el tema
         Rango: par de enteros indicando el rango de puntuaciones de las funciones
         Fitness: función que evalúa "cómo de buena" es una pareja de funciones (a priori la métrica sintáctica)
@@ -117,43 +138,75 @@ def genetico():
                 Número de literales a negar
             Mutación de intercambio de cláusulas:
                 Elección de qué cláusulas intercambiar
+ 
+    Genotipo: Listas de varios elementos
+        -> [FND1, puntuación(FND1)]
+        -> [FND2, puntuación(FND2)]
+        -> Incremento de puntuación
+            -> El incremento de puntuación se calcula respecto a la puntuación máxima de FND1 y FND2
     '''
-    
-    OR_ITER = 15
-    AND_ITER = 15
+
+    PUERTAS = ['OR', 'AND']
+    PUERTAS_HABILITADAS = ['OR', 'AND'] # Por si no queremos usar todas en la simulación
+    COMBINACIONES = {'OR': combOR, 'AND': combAND_with_not}
+    ITERACIONES = {'OR': 50, 'AND': 50} # Iteraciones de cada puerta
     POPULATION_SIZE = 300
+    NUM_GENERATIONS = 300
+    T = 4   # Tamaño de los torneos para la selección
+    CLAVE = lambda gen: -gen[2]  # Tomamos máximos según el incremento de la métrica (negativo para tomar el máximo)
+
+    xs, ys = {}, {}   # Para graficar los resultados
+    for p in PUERTAS_HABILITADAS:
+        xs[p], ys[p] = [], []
 
     # Lo primero que tenemos que conseguir es una población inicial para arrancar el algoritmo
-    population = [generate_individual() for _ in range(POPULATION_SIZE)]
-    
-    for generation in range(NUM_GENERATIONS):
+    poblaciones = {}
+    for p in PUERTAS_HABILITADAS:
+        poblaciones[p] = poblacion_inicial(ini, fin, POPULATION_SIZE, p)
+    tiempo = 0
+    print("Poblaciones iniciales generadas")
+    print("Iniciando algoritmo genético")
+    for generation in range(1, NUM_GENERATIONS + 1):
         start_time = time.perf_counter()
+        for p in PUERTAS_HABILITADAS:
+            for it in range(ITERACIONES[p]):
+                # Selección por torneo de T individuos
+                torneo1 = random.sample(poblaciones[p], T)
+                torneo2 = random.sample(poblaciones[p], T)
+                gen1 = max(torneo1, key=CLAVE)
+                gen2 = max(torneo2, key=CLAVE)
+                for i in range(2):
+                    for j in range(2):
+                        f, g = gen1[i][0], gen2[j][0]
+                        m_f, m_g = gen1[i][1], gen2[j][1]
+                        comb = COMBINACIONES[p](f, g)   # Juntamos las dos funciones a través de la puerta
+                        incremento = m(comb) - max(m_f, m_g)
+                        gen = [[f, m_f], [g, m_g], incremento]
+                        xs[p].append(m_f); xs[p].append(m_g)
+                        ys[p].append(incremento); ys[p].append(incremento)
+                        # TODO Como estoy viendo parejas, igual tiene más sentido una representación 3D
+                        # TODO Debería limitar la longitud de las FNDs
+                        # Mutación TODO
 
-        # Evaluación
-        population.sort(key=fitness, reverse=True)
-        best_fitness = fitness(population[0])
 
-        # Selección
-        new_population = population[:POPULATION_SIZE // 2]  # Elitismo (mejores sobreviven)
-        while len(new_population) < POPULATION_SIZE:
-            # Cruce
-            p1, p2 = select_parents(population)
-            child1, child2 = crossover(p1, p2)
-
-            # Mutación
-            mutate(child1)
-            mutate(child2)
-            new_population.extend([child1, child2])
-
-        population = new_population[:POPULATION_SIZE]
+                        poblaciones[p].append(gen)
+            poblaciones[p].sort(key=CLAVE)
+            poblaciones[p] = poblaciones[p][:POPULATION_SIZE]   # Nos quedamos con los mejores
 
         # Imprimir estadísticas
         end_time = time.perf_counter()
-        print(f"Generación {generation+1}: Mejor aptitud = {best_fitness}, Tiempo = {end_time - start_time:.6f} s")
+        tiempo += end_time - start_time
+        print(f"Generación {generation}: Tiempo = {end_time - start_time:.2f} s")
+        for p in PUERTAS_HABILITADAS:
+            print(f"    Mejor incremento con puerta {p}: {-CLAVE(max(poblaciones[p], key=CLAVE))}")
+        if generation == 10:
+            estimacion = (NUM_GENERATIONS - 10) * tiempo / 10
+            horas, minutos = estimacion / 3600, estimacion / 60
+            if horas >= 1:
+                print(f"Tiempo restante estimado: {horas:.3f} horas")
+            else:
+                print(f"Tiempo restante estimado: {minutos:.3f} minutos")
+        print()
+        # TODO Falta guardar datos externamente
 
-        # Criterio de parada opcional
-        if best_fitness == GENOME_LENGTH:
-            print("Óptimo encontrado. Deteniendo...")
-            break
-
-    return population[0]
+genetico(1, 10)
