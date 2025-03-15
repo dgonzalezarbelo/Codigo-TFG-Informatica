@@ -322,10 +322,10 @@ def simulate_circuit_with_not() :
     S = S1 + S2
     or_iter = 15
     and_iter = 15
-    max_size = 150
+    max_size = 2 * CLAUSULAS
     limit = 300
-    # iter = 300
-    iter = 50
+    iter = 300
+    # iter = 50
     # iter = 10
     xOR = []; xAND = []
     yOR = []; yAND = []
@@ -542,7 +542,7 @@ def compare_big_end_fun() :
 # print("Valor función objetivo: ", m(clique))
 
 
-# simulate_circuit_with_not()
+simulate_circuit_with_not()
 
 #compare_rand_fun_with_not()
 
