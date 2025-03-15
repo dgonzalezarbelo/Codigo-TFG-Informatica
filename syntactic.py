@@ -7,7 +7,9 @@ import math
 from random import sample
 import matplotlib.pyplot as plt
 from collections import deque
+from collections import defaultdict
 import time
+from experimentos import *
 
 N = 8 # Vértices
 K = 4 # Tamaño del clique
@@ -314,9 +316,9 @@ def simulate_circuit() :
 
 # Simula el circuito con NOT
 def simulate_circuit_with_not() :
-    # Variables
-    S1 = [([[i]],1) for i in range(1, A+1)]
-    S2 = [([[-i]],0) for i in range(1, A+1)]
+    # Variables (FND, métrica, puertas)
+    S1 = [([[i]], 1, 0) for i in range(1, A + 1)]
+    S2 = [([[-i]], 0, 0) for i in range(1, A + 1)]
     S = S1 + S2
     or_iter = 15
     and_iter = 15
@@ -324,37 +326,54 @@ def simulate_circuit_with_not() :
     limit = 300
     # iter = 300
     iter = 50
+    # iter = 10
     xOR = []; xAND = []
     yOR = []; yAND = []
+
+    # fnds es una lista en la que, para cada valor de la métrica,
+    # vamos a guardar las FNDs calculadas y las puertas que han hecho falta para ello
+    # El número de puertas puede no ser óptimo, pero nos lo guardamos para analizar datos en otro momento
+    fnds = [[] for _ in range(M_CLIQUE + 1)]
+    for i in range(1, A + 1):
+        fnds[1].append(([i], 0))
+        fnds[0].append(([-i], 0))
+
     for _ in range(iter) :
         start_time = time.perf_counter()
         for i in range(or_iter) :
-            (f, aux) = random.choice(S)
-            (g, aux) = random.choice(S)
+            (f, m1, p1) = random.choice(S)
+            (g, m2, p2) = random.choice(S)
             h = combOR(f, g)
             if len(h) <= max_size and h != []: 
-                m1 = m(f); m2 = m(g); m3 = m(h)
+                # m1 = m(f); m2 = m(g)
+                m3 = m(h)
+                p3 = p1 + p2 + 1    # Puertas empleadas para computar h
                 # if m3 == 0 : print(f, g)
                 xOR.append(m1); xOR.append(m2)
                 yOR.append(m3); yOR.append(m3)
-                S.append((h, m3))
+                S.append((h, m3, p3))
+                fnds[m3].append((h, p3))
         for i in range(and_iter) :
-            (f, aux) = random.choice(S)
-            (g, aux) = random.choice(S)
+            (f, m1, p1) = random.choice(S)
+            (g, m2, p2) = random.choice(S)
             h = combAND_with_not(f, g)
             if len(h) <= max_size and h != []: 
-                m1 = m(f); m2 = m(g); m3 = m(h)
+                # m1 = m(f); m2 = m(g)
+                m3 = m(h)
                 xAND.append(m1); xAND.append(m2)
                 yAND.append(m3); yAND.append(m3)
-                S.append((h, m3))
+                S.append((h, m3, p3))
+                fnds[m3].append((h, p3))
         
         end_time = time.perf_counter()
         iteration_time = end_time - start_time
         print(f"Iteración: {_+1} (Tiempo de ejecución: {iteration_time:.2f} segundos)")
+        
         S.sort(key = lambda elem : elem[1], reverse = True)
-        while len(S) > limit : S.pop()
+        S = S[:limit]
+        # while len(S) > limit : S.pop()
     
-    
+    guardar_experimento(None, fnds, iter, xAND, yAND, xOR, yOR)
     
     print("Incremento máximo:", S[0][1])
     fig = plt.figure(figsize = (8,5))
@@ -373,7 +392,7 @@ def compare_low_end_fun() :
 
     M = len(clique)
     tam = 100
-    tope = int(sqrt(M))
+    tope = int(math.sqrt(M))
     end_funs1 = [endogamic_fun(random.randint(1, K//2), random.randint(1, tope)) for _ in range(tam)]
     end_funs2 = [endogamic_fun(random.randint(1, K//2), random.randint(1, tope), True) for _ in range(tam)]
     #for f in end_funs1 : print(f)
