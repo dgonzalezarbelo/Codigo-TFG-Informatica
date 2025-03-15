@@ -324,9 +324,9 @@ def simulate_circuit_with_not() :
     and_iter = 15
     max_size = 2 * CLAUSULAS
     limit = 300
-    iter = 300
+    # iter = 300
     # iter = 50
-    # iter = 10
+    iter = 10
     xOR = []; xAND = []
     yOR = []; yAND = []
 
@@ -370,8 +370,7 @@ def simulate_circuit_with_not() :
         print(f"Iteración: {_+1} (Tiempo de ejecución: {iteration_time:.2f} segundos)")
         
         S.sort(key = lambda elem : elem[1], reverse = True)
-        S = S[:limit]
-        # while len(S) > limit : S.pop()
+        while len(S) > limit : S.pop()
     
     guardar_experimento(None, fnds, iter, xAND, yAND, xOR, yOR)
     

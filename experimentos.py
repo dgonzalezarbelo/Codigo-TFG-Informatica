@@ -4,8 +4,9 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
+from debug import *
 
-def guardar_funciones(ruta, punt_funciones):
+def guardar_funciones(ruta, funciones):
     '''
     El formato del JSON es el siguiente:
     Lista de puntuaciones (de 0 a M_CLIQUE)
@@ -13,11 +14,11 @@ def guardar_funciones(ruta, punt_funciones):
             Para cada función se guarda una pareja (FND, p),
             donde FND es su forma normal disyuntiva y p es el número de puertas que ha hecho falta para computarla
     '''
-    if punt_funciones == None:
+    if funciones == None:
         return
-    dict_funciones = {str(i) : lista for i, lista in enumerate(punt_funciones)}
+    dict_funciones = {str(i) : lista for i, lista in enumerate(funciones)}
     # Guardar FNDs en JSON
-    with open(os.path.join(ruta, "funciones_fnd.json"), "w") as f:
+    with open(ruta, "w") as f:
         json.dump(dict_funciones, f, indent=4)
 
 def guardar_coordenadas(ruta, xAND, yAND, xOR, yOR):
@@ -79,10 +80,120 @@ def guardar_experimento(nombre=None, punt_funciones=None, iter=None, xAND=None, 
         nombre = generar_nombre_experimento()
     
     ruta = os.path.join("experimentos", nombre)
-
+    
     # Crear la carpeta del experimento antes de guardar los archivos
     os.makedirs(ruta, exist_ok=True)
 
-    guardar_funciones(ruta, punt_funciones)
+    guardar_funciones(os.path.join(ruta, "funciones_fnd.json"), punt_funciones)
     guardar_coordenadas(ruta, xAND, yAND, xOR, yOR)
     guardar_graficas(ruta, iter, xAND, yAND, xOR, yOR)
+
+def leer_json_funciones(ruta):
+    '''
+    Lee un JSON donde tenemos listas de funciones (parejas FND-puertas) agrupadas por puntuaciones
+    (las funciones le la lista n tienen puntuación n)
+    Si el archivo está vacío o no tiene datos válidos, devuelve una lista vacía
+    '''
+    if not os.path.exists(ruta) or os.stat(ruta).st_size == 0:
+        return []
+    
+    try:
+        with open(ruta, "r") as f:
+            data = json.load(f)
+    except json.JSONDecodeError:
+        return []   # En caso de que el JSON esté vacío o mal formado
+
+    # El índice en la lista es la puntuación de las funciones
+    ret = []
+    for puntuacion, funciones in data.items():
+        ret.append(funciones)
+
+    # Nos quedamos solo con funciones hasta la puntuación máxima, no queremos listas vacías a partir de ahí
+    while len(ret) > 0 and len(ret[-1]) == 0:
+        ret.pop()
+
+    return ret
+
+def leer_fnds_por_puntuacion(ruta):
+    funciones = leer_json_funciones(ruta)
+    ret = []
+    for lista in funciones:
+        fnds = []
+        for f in lista:
+            fnds.append(f[0])   # La primera componente de cada item es la FND, la segunda es el número de puertas
+        ret.append(fnds)
+    
+    return ret
+
+def almacena_fnds(ruta_nuevas, ruta_almacen):
+    '''
+    Función para almacenar en ruta_almacen todas las FNDs provenientes de ruta_nuevas.
+    Para cada FND (acompañada del número de puertas usado para computarla),
+    se comprobará si ya estaba en ruta_almacen. En tal caso, se actualizará el número de puertas
+    si resulta ser menor al que ya se tenía
+    '''
+    almacen = leer_json_funciones(ruta_almacen)
+    nuevas = leer_json_funciones(ruta_nuevas)
+    
+    # Buscamos cada una de las nuevas FNDs
+    max_punt = len(nuevas) - 1
+    while len(almacen) <= max_punt:
+        almacen.append([])
+    for punt in range(max_punt):
+        for f in nuevas[punt]:
+            if len(f) == 0:
+                continue
+            fnd = f[0]
+            encontrada = False
+            for g in almacen[punt]:
+                if fnd == g[0]:
+                    g[1] = min(g[1], f[1])
+                    encontrada = True
+                    break
+            if not encontrada:
+                almacen[punt].append(f)
+
+    # Nos quedamos solo con funciones hasta la puntuación máxima, no queremos listas vacías a partir de ahí
+    while len(almacen) > 0 and len(almacen[-1]) == 0:
+        almacen.pop()
+
+    # Guardamos el almacen actualizado
+    guardar_funciones(ruta_almacen, almacen)
+
+def grafica_puntuaciones_por_puertas(funciones):
+    '''
+    Función para graficar la puntuación máxima obtenida por número de puertas
+    El argumento es una lista de listas donde el índice indica la puntuación.
+    Dentro, cada sublista contiene listas de dos elementos
+        El primer elemento es una FND, y el segundo es el número de puertas necesitado para computarla
+    '''
+    # TODO No se deberían ver los puntos que realmente no existen
+
+    por_puertas = []
+    for punt, lista in enumerate(funciones):
+        for funcion in lista:
+            puertas = funcion[1]
+            if punt > 30 and puertas == 0:
+                debug(funcion)
+            while len(por_puertas) <= puertas:
+                por_puertas.append(0)
+            por_puertas[puertas] = max(por_puertas[puertas], punt)
+    
+    fig = plt.figure(figsize = (8,5))
+    plt.plot(range(len(por_puertas)), por_puertas, 'ro', alpha = 0.5)
+    # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
+    title = "Relación entre número de puertas y puntuación máxima"
+    plt.title(title)
+    # plt.legend()
+    plt.xlabel("Número de puertas")
+    plt.ylabel("Puntuación máxima")
+    # plt.savefig(os.path.join(ruta, "graficaAND.png"))
+    plt.show()
+    # plt.close()
+
+def pruebas():
+    almacena_fnds('experimentos/experimentos_n8/Simulacion_300_iteraciones/funciones_fnd.json', 'experimentos/experimentos_n8/almacen_fnds.json')
+    almacen = leer_json_funciones('experimentos/experimentos_n8/almacen_fnds.json')
+    grafica_puntuaciones_por_puertas(almacen)
+
+pruebas()
