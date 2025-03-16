@@ -241,7 +241,8 @@ def genetico(ini, fin):
                                 mutaciones_fallidas += 1
 
             poblaciones[p].sort(key=CLAVE_NEG)
-            poblaciones[p] = poblaciones[p][:POPULATION_SIZE]   # Nos quedamos con los mejores
+            while len(poblaciones[p]) > POPULATION_SIZE:
+                poblaciones[p].pop()   # Nos quedamos con los mejores
 
         # Imprimir estadísticas
         end_time = time.perf_counter()
