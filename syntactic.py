@@ -338,6 +338,7 @@ def simulate_circuit_with_not() :
         fnds[1].append(([i], 0))
         fnds[0].append(([-i], 0))
 
+    tiempo = 0
     for _ in range(iter) :
         start_time = time.perf_counter()
         for i in range(or_iter) :
@@ -367,15 +368,17 @@ def simulate_circuit_with_not() :
         
         end_time = time.perf_counter()
         iteration_time = end_time - start_time
+        tiempo += iteration_time
         print(f"Iteración: {_+1} (Tiempo de ejecución: {iteration_time:.2f} segundos)")
         
         S.sort(key = lambda elem : elem[1], reverse = True)
-        S = S[:limit]
-        # while len(S) > limit : S.pop()
+        # S = S[:limit]
+        while len(S) > limit : S.pop()
     
     guardar_experimento(None, fnds, iter, xAND, yAND, xOR, yOR)
     
     print("Incremento máximo:", S[0][1])
+    print(f"Tiempo de ejecución: {tiempo}")
     fig = plt.figure(figsize = (8,5))
     #plt.xlim([0,420])
     plt.plot(xAND, yAND, 'ro', alpha = 0.5, label = "Incremento con AND")
