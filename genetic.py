@@ -127,7 +127,7 @@ def mutacion_intercambio(f, g):
 
     return f, g
 
-def genetico(ini, fin):
+def genetico(ini, fin, pob_inicial = None):
     '''
     Algoritmo genético para buscar pares de funciones con puntuaciones en un rango dado
     que generen el máximo incremento de la métrica
@@ -162,14 +162,15 @@ def genetico(ini, fin):
     PUERTAS_HABILITADAS = ['AND'] # Por si no queremos usar todas en la simulación
     COMBINACIONES = {'OR': combOR, 'AND': combAND_with_not}
     ITERACIONES = {'OR': 15, 'AND': 15} # Iteraciones de cada puerta
-    # POPULATION_SIZE = 300
-    POPULATION_SIZE = 30
+    POPULATION_SIZE = 300
+    # POPULATION_SIZE = 30
     NUM_GENERATIONS = 300
     T = 4   # Tamaño de los torneos para la selección
     CLAVE = lambda gen: gen[2]  # Tomamos máximos según el incremento de la métrica (negativo para tomar el máximo)
     CLAVE_NEG = lambda gen: -CLAVE(gen)
     MAX_PAUSA = 15  # Máximo número de iteraciones que permitimios sin mejora
-    PROB_MUT = 0.05 # Probabilidad de mutación
+    PROB_MUT = 0 # Probabilidad de mutación
+    # PROB_MUT = 0.05 # Probabilidad de mutación
 
     xs, ys, zs = {}, {}, {}   # Para graficar los resultados
     for p in PUERTAS_HABILITADAS:
@@ -185,7 +186,10 @@ def genetico(ini, fin):
     # Lo primero que tenemos que conseguir es una población inicial para arrancar el algoritmo
     poblaciones = {}
     for p in PUERTAS_HABILITADAS:
-        poblaciones[p] = poblacion_inicial(ini, fin, POPULATION_SIZE, p)
+        if pob_inicial == None:
+            poblaciones[p] = poblacion_inicial(ini, fin, POPULATION_SIZE, p)
+        else:
+            poblaciones[p] = pob_inicial.copy()
     
     print("Poblaciones iniciales generadas")
     print("Iniciando algoritmo genético")
@@ -298,3 +302,25 @@ def genetico(ini, fin):
     print(f"Generaciones totales computadas: {generaciones_computadas}")
 
 # genetico(100, 150)
+
+def prueba_genetico():
+    funciones = leer_fnds_por_puntuacion('experimentos/experimentos_n8/Simulacion_300_iteraciones/funciones_fnd.json')
+    ini, fin = 150, 200
+    validas = []
+    for punt in range(ini, min(fin, len(funciones))):
+        for f in funciones[punt]:
+            validas += [[f, punt]]
+    random.shuffle(validas)
+    pob_inicial = []
+    for i in range(0, len(validas) - 1, 2):
+        [f1, punt1] = validas[i]
+        [f2, punt2] = validas[i + 1]
+        incremento = m(combAND_with_not(f1, f2)) - max(punt1, punt2)
+        pob_inicial.append([[f1, punt1], [f2, punt2], incremento])
+    genetico(ini, fin, pob_inicial)
+
+def prueba_bruta():
+    genetico(150, 200)
+
+# prueba_genetico() -> Ha salido 265 de métrica máxima
+prueba_bruta()

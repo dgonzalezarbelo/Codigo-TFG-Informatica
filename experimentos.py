@@ -196,4 +196,4 @@ def pruebas():
     almacen = leer_json_funciones('experimentos/experimentos_n8/almacen_fnds.json')
     grafica_puntuaciones_por_puertas(almacen)
 
-pruebas()
+# pruebas()

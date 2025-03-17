@@ -541,7 +541,7 @@ def compare_big_end_fun() :
 # print("Valor función objetivo: ", m(clique))
 
 
-simulate_circuit_with_not()
+# simulate_circuit_with_not()
 
 #compare_rand_fun_with_not()
 
