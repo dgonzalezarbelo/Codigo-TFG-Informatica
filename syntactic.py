@@ -320,13 +320,16 @@ def simulate_circuit_with_not() :
     S1 = [([[i]], 1, 0) for i in range(1, A + 1)]
     S2 = [([[-i]], 0, 0) for i in range(1, A + 1)]
     S = S1 + S2
+    T = 20
+    CLAVE = lambda f: f[1]  # Métrica en negativo para tomar el máximo
+    CLAVE_NEG = lambda f: -CLAVE(f)
     or_iter = 15
     and_iter = 15
     max_size = 2 * CLAUSULAS
     limit = 300
-    # iter = 300
+    iter = 1000
     # iter = 50
-    iter = 10
+    # iter = 10
     xOR = []; xAND = []
     yOR = []; yAND = []
 
@@ -338,11 +341,20 @@ def simulate_circuit_with_not() :
         fnds[1].append(([i], 0))
         fnds[0].append(([-i], 0))
 
+    tiempo = 0
     for _ in range(iter) :
         start_time = time.perf_counter()
         for i in range(or_iter) :
-            (f, m1, p1) = random.choice(S)
-            (g, m2, p2) = random.choice(S)
+            # Selección aleatoria
+            # (f, m1, p1) = random.choice(S)
+            # (g, m2, p2) = random.choice(S)
+
+            # Selección por torneo de T individuos
+            torneo1 = random.sample(S, T)
+            torneo2 = random.sample(S, T)
+            (f, m1, p1) = max(torneo1, key=CLAVE)
+            (g, m2, p2) = max(torneo2, key=CLAVE)
+
             h = combOR(f, g)
             if len(h) <= max_size and h != []: 
                 # m1 = m(f); m2 = m(g)
@@ -354,8 +366,14 @@ def simulate_circuit_with_not() :
                 S.append((h, m3, p3))
                 fnds[m3].append((h, p3))
         for i in range(and_iter) :
-            (f, m1, p1) = random.choice(S)
-            (g, m2, p2) = random.choice(S)
+            # (f, m1, p1) = random.choice(S)
+            # (g, m2, p2) = random.choice(S)
+
+            # Selección por torneo de T individuos
+            torneo1 = random.sample(S, T)
+            torneo2 = random.sample(S, T)
+            (f, m1, p1) = max(torneo1, key=CLAVE)
+            (g, m2, p2) = max(torneo2, key=CLAVE)
             h = combAND_with_not(f, g)
             if len(h) <= max_size and h != []: 
                 # m1 = m(f); m2 = m(g)
@@ -367,14 +385,16 @@ def simulate_circuit_with_not() :
         
         end_time = time.perf_counter()
         iteration_time = end_time - start_time
+        tiempo += iteration_time
         print(f"Iteración: {_+1} (Tiempo de ejecución: {iteration_time:.2f} segundos)")
         
-        S.sort(key = lambda elem : elem[1], reverse = True)
+        S.sort(key = CLAVE_NEG)
         while len(S) > limit : S.pop()
     
     guardar_experimento(None, fnds, iter, xAND, yAND, xOR, yOR)
     
     print("Incremento máximo:", S[0][1])
+    print(f"Tiempo de ejecución: {tiempo}")
     fig = plt.figure(figsize = (8,5))
     #plt.xlim([0,420])
     plt.plot(xAND, yAND, 'ro', alpha = 0.5, label = "Incremento con AND")
