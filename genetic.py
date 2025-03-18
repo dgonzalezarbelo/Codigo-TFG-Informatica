@@ -4,6 +4,7 @@ import math
 import random
 from debug import debug
 from debug import tam_total
+from experimentos import *
 
 def particion_con_limite(suma, n, limite):
     '''Genera una lista de n números positivos menores o iguales a limite que suman exactamente suma'''
@@ -168,7 +169,7 @@ def genetico(ini, fin, pob_inicial = None):
     T = 4   # Tamaño de los torneos para la selección
     CLAVE = lambda gen: gen[2]  # Tomamos máximos según el incremento de la métrica (negativo para tomar el máximo)
     CLAVE_NEG = lambda gen: -CLAVE(gen)
-    MAX_PAUSA = 15  # Máximo número de iteraciones que permitimios sin mejora
+    MAX_PAUSA = 30  # Máximo número de iteraciones que permitimios sin mejora
     PROB_MUT = 0 # Probabilidad de mutación
     # PROB_MUT = 0.05 # Probabilidad de mutación
 
@@ -224,25 +225,25 @@ def genetico(ini, fin, pob_inicial = None):
                         zs[p].append(incremento)
                         
                         # Mutación TODO Esto se puede encapsular mejor
-                        if random.uniform(0, 1) < PROB_MUT:
-                            mutaciones += 1
-                            fmut, gmut = mutacion_intercambio(f, g)
-                            m_fmut, m_gmut = m(fmut), m(gmut)
-                            if min(m_fmut, m_gmut) >= ini and max(m_fmut, m_gmut) <= fin:
-                                comb = COMBINACIONES[p](fmut, gmut)   # Juntamos las dos funciones a través de la puerta
-                                m_comb = m(comb)
-                                incremento = m_comb - max(m_fmut, m_gmut)
-                                max_m[p] = max(max_m[p], m_comb)
-                                mejor_incr[p] = max(incremento, mejor_incr[p])
+                        # if random.uniform(0, 1) < PROB_MUT:
+                        #     mutaciones += 1
+                        #     fmut, gmut = mutacion_intercambio(f, g)
+                        #     m_fmut, m_gmut = m(fmut), m(gmut)
+                        #     if min(m_fmut, m_gmut) >= ini and max(m_fmut, m_gmut) <= fin:
+                        #         comb = COMBINACIONES[p](fmut, gmut)   # Juntamos las dos funciones a través de la puerta
+                        #         m_comb = m(comb)
+                        #         incremento = m_comb - max(m_fmut, m_gmut)
+                        #         max_m[p] = max(max_m[p], m_comb)
+                        #         mejor_incr[p] = max(incremento, mejor_incr[p])
                                 
-                                gen = [[fmut, m_fmut], [gmut, m_gmut], incremento]
-                                poblaciones[p].append(gen)
+                        #         gen = [[fmut, m_fmut], [gmut, m_gmut], incremento]
+                        #         poblaciones[p].append(gen)
 
-                                xs[p].append(m_fmut)
-                                ys[p].append(m_gmut)
-                                zs[p].append(incremento)
-                            else:
-                                mutaciones_fallidas += 1
+                        #         xs[p].append(m_fmut)
+                        #         ys[p].append(m_gmut)
+                        #         zs[p].append(incremento)
+                        #     else:
+                        #         mutaciones_fallidas += 1
 
             poblaciones[p].sort(key=CLAVE_NEG)
             while len(poblaciones[p]) > POPULATION_SIZE:
@@ -296,31 +297,44 @@ def genetico(ini, fin, pob_inicial = None):
             print("Valor máximo de la métrica alcanzado")
             break
 
-        # TODO Falta guardar datos externamente
     print("Algoritmo genético completado")
     print(f"Tiempo total de ejecución: {tiempo} segundos")
     print(f"Generaciones totales computadas: {generaciones_computadas}")
 
-# genetico(100, 150)
+    guarda_genetico(None, poblaciones, PUERTAS_HABILITADAS)
+    grafica_genetico(poblaciones, PUERTAS_HABILITADAS)
 
-def prueba_genetico():
-    funciones = leer_fnds_por_puntuacion('experimentos/experimentos_n8/Simulacion_300_iteraciones/funciones_fnd.json')
-    ini, fin = 150, 200
-    validas = []
-    for punt in range(ini, min(fin, len(funciones))):
-        for f in funciones[punt]:
-            validas += [[f, punt]]
-    random.shuffle(validas)
-    pob_inicial = []
-    for i in range(0, len(validas) - 1, 2):
-        [f1, punt1] = validas[i]
-        [f2, punt2] = validas[i + 1]
-        incremento = m(combAND_with_not(f1, f2)) - max(punt1, punt2)
-        pob_inicial.append([[f1, punt1], [f2, punt2], incremento])
-    genetico(ini, fin, pob_inicial)
+def perdida_de_puntuacion(f):
+    '''
+    Dada una función devuelve la diferencia entre el número de literales y su puntuación
+    (El número de literales sería la puntuación máxima en el caso de un matching perfecto)
+    '''
+    literales = 0
+    f = reduce(f)
+    for claus in f:
+        literales += len(claus)
+    return literales - m(f)
 
-def prueba_bruta():
-    genetico(150, 200)
-
-# prueba_genetico() -> Ha salido 265 de métrica máxima
-prueba_bruta()
+def grafica_perdidas(funciones):
+    '''
+    Funciones es una lista donde el índice es la puntuación
+    y cada elemento es una lista de funciones con dicha puntuación
+    '''
+    por_punt = [[] for _ in range(len(funciones))]
+    xs, ys = [], []
+    for punt, lista in enumerate(funciones):
+        debug(punt)
+        for f in lista:
+            xs.append(punt)
+            ys.append(perdida_de_puntuacion(f))
+    
+    fig = plt.figure(figsize = (8,5))
+    plt.plot(xs, ys, 'ro', alpha = 0.5)
+    # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
+    title = "Relación entre puntuación y exceso de literales"
+    plt.title(title)
+    # plt.legend()
+    plt.xlabel("Puntuación")
+    plt.ylabel("Exceso de literales")
+    # plt.savefig(os.path.join(ruta, "graficaAND.png"))
+    plt.show()

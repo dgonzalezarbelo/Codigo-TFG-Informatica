@@ -16,10 +16,38 @@ def guardar_funciones(ruta, funciones):
     '''
     if funciones == None:
         return
-    dict_funciones = {str(i) : lista for i, lista in enumerate(funciones)}
-    # Guardar FNDs en JSON
+    
+    # Convertimos la lista en una cadena de texto con el formato deseado
+    json_text = "{\n"
+    for punt, lista in enumerate(funciones):
+        if punt != 0:
+            json_text += ",\n"
+        json_text += (f'\t\"{punt}\": [\n')
+        first = True
+        for funcion in lista:
+            if not first:
+                json_text += ",\n"
+            first = False
+            json_text += (f"\t\t[{funcion[0]}, {punt}]")
+        json_text += ("\n\t]")
+    json_text += ("}")
+
+    # Guardamos el JSON como un archivo de texto con extensión .json
     with open(ruta, "w") as f:
-        json.dump(dict_funciones, f, indent=4)
+        f.write(json_text)
+
+    # with open(ruta, "w") as f:
+    #     f.write("{")
+    #     for punt, lista in enumerate(funciones):
+    #         f.write(f'\"{punt}\": [')
+    #         for funcion in lista:
+    #             f.write(f"{funcion[0]},")
+    #         f.write("]")
+    #     f.write("}")
+    # dict_funciones = {str(i) : lista for i, lista in enumerate(funciones)}
+    # # Guardar FNDs en JSON
+    # with open(ruta, "w") as f:
+    #     json.dump(dict_funciones, f, indent=4, separators=(",",": "))
 
 def guardar_coordenadas(ruta, xAND, yAND, xOR, yOR):
     # Guardar coordenadas en CSV
@@ -75,7 +103,7 @@ def guardar_graficas(ruta, iter, xAND=None, yAND=None, xOR=None, yOR=None):
 def generar_nombre_experimento():
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-def guardar_experimento(nombre=None, punt_funciones=None, iter=None, xAND=None, yAND=None, xOR=None, yOR=None):
+def guardar_simulacion(nombre, punt_funciones, iter, xAND, yAND, xOR, yOR):
     if nombre == None:
         nombre = generar_nombre_experimento()
     
@@ -87,6 +115,33 @@ def guardar_experimento(nombre=None, punt_funciones=None, iter=None, xAND=None, 
     guardar_funciones(os.path.join(ruta, "funciones_fnd.json"), punt_funciones)
     guardar_coordenadas(ruta, xAND, yAND, xOR, yOR)
     guardar_graficas(ruta, iter, xAND, yAND, xOR, yOR)
+
+def guarda_genetico(nombre, poblaciones, puertas):
+    '''Función para guardar los mejores pares de funciones por cada puerta utilizada'''
+    if nombre == None:
+        nombre = generar_nombre_experimento()
+    for p in puertas:
+        ruta = os.path.join("experimentos", nombre)
+        with open(os.path.join(ruta, f"mejores_{p}.json")) as f:
+            f.write(poblaciones[p])
+    
+def grafica_genetico(poblaciones, puertas):
+    colores = {"AND": 'ro', "OR": 'bo'}
+    fig = plt.figure(figsize = (8,5))
+    for p in puertas:
+        xs, ys = [], []
+        for f in poblaciones[p]:
+            xs.append(f[0][1]); xs.append(f[1][1])
+            ys.append(f[2]); ys.append(f[2])
+        #plt.xlim([0,420])
+        plt.plot(xs, ys, colores[p], alpha = 0.5, label = f"Incremento con {p}")
+        title = f"Máximo incremento con puerta {p}"
+        plt.title(title)
+        plt.legend()
+        plt.xlabel("$\mu_x(f)$")
+        plt.ylabel("Incremento")
+    
+    plt.show()
 
 def leer_json_funciones(ruta):
     '''
@@ -190,10 +245,3 @@ def grafica_puntuaciones_por_puertas(funciones):
     # plt.savefig(os.path.join(ruta, "graficaAND.png"))
     plt.show()
     # plt.close()
-
-def pruebas():
-    almacena_fnds('experimentos/experimentos_n8/Simulacion_300_iteraciones/funciones_fnd.json', 'experimentos/experimentos_n8/almacen_fnds.json')
-    almacen = leer_json_funciones('experimentos/experimentos_n8/almacen_fnds.json')
-    grafica_puntuaciones_por_puertas(almacen)
-
-# pruebas()

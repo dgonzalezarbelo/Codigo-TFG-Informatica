@@ -11,13 +11,14 @@ from collections import defaultdict
 import time
 from experimentos import *
 
-N = 8 # Vértices
-K = 4 # Tamaño del clique
+N = 7 # Vértices
+K = N // 2 # Tamaño del clique
 A = N * (N-1) // 2 # Aristas en el grafo
 A_CLIQUE = K * (K-1) // 2 # Aristas en un cliqué de tamaño K
 CLAUSULAS = math.comb(N, K)
 M_CLIQUE = CLAUSULAS * A_CLIQUE # Puntuación de la función Cliqué
 subsets = []
+idx = [[0 for i in range(N+1)] for j in range(N+1)]
 
 # Genera los subconjuntnso de tamaño sz a partir de la variable ini
 def generate_subset(n, ini, sz, acc) : 
@@ -35,7 +36,6 @@ def generate_subset(n, ini, sz, acc) :
 # Genera la función booleana que computa el clique
 def generate_fun_clique(subsets) :
     res = []
-    idx = [[0 for i in range(N+1)] for j in range(N+1)]
     cnt = 1
     for i in range(1,N+1) :
         for j in range(i+1, N+1) :
@@ -327,9 +327,9 @@ def simulate_circuit_with_not() :
     and_iter = 15
     max_size = 2 * CLAUSULAS
     limit = 300
-    iter = 1000
+    # iter = 1000
     # iter = 50
-    # iter = 10
+    iter = 10
     xOR = []; xAND = []
     yOR = []; yAND = []
 
@@ -346,14 +346,14 @@ def simulate_circuit_with_not() :
         start_time = time.perf_counter()
         for i in range(or_iter) :
             # Selección aleatoria
-            # (f, m1, p1) = random.choice(S)
-            # (g, m2, p2) = random.choice(S)
+            (f, m1, p1) = random.choice(S)
+            (g, m2, p2) = random.choice(S)
 
-            # Selección por torneo de T individuos
-            torneo1 = random.sample(S, T)
-            torneo2 = random.sample(S, T)
-            (f, m1, p1) = max(torneo1, key=CLAVE)
-            (g, m2, p2) = max(torneo2, key=CLAVE)
+            # # Selección por torneo de T individuos
+            # torneo1 = random.sample(S, T)
+            # torneo2 = random.sample(S, T)
+            # (f, m1, p1) = max(torneo1, key=CLAVE)
+            # (g, m2, p2) = max(torneo2, key=CLAVE)
 
             h = combOR(f, g)
             if len(h) <= max_size and h != []: 
@@ -366,14 +366,14 @@ def simulate_circuit_with_not() :
                 S.append((h, m3, p3))
                 fnds[m3].append((h, p3))
         for i in range(and_iter) :
-            # (f, m1, p1) = random.choice(S)
-            # (g, m2, p2) = random.choice(S)
+            (f, m1, p1) = random.choice(S)
+            (g, m2, p2) = random.choice(S)
 
-            # Selección por torneo de T individuos
-            torneo1 = random.sample(S, T)
-            torneo2 = random.sample(S, T)
-            (f, m1, p1) = max(torneo1, key=CLAVE)
-            (g, m2, p2) = max(torneo2, key=CLAVE)
+            # # Selección por torneo de T individuos
+            # torneo1 = random.sample(S, T)
+            # torneo2 = random.sample(S, T)
+            # (f, m1, p1) = max(torneo1, key=CLAVE)
+            # (g, m2, p2) = max(torneo2, key=CLAVE)
             h = combAND_with_not(f, g)
             if len(h) <= max_size and h != []: 
                 # m1 = m(f); m2 = m(g)
@@ -391,7 +391,7 @@ def simulate_circuit_with_not() :
         S.sort(key = CLAVE_NEG)
         while len(S) > limit : S.pop()
     
-    guardar_experimento(None, fnds, iter, xAND, yAND, xOR, yOR)
+    guardar_simulacion(None, fnds, iter, xAND, yAND, xOR, yOR)
     
     print("Incremento máximo:", S[0][1])
     print(f"Tiempo de ejecución: {tiempo}")
@@ -550,21 +550,6 @@ def compare_big_end_fun() :
     plt.show()
 
 
-
-
-
-
-
-
 '''LLAMAR A LO QUE SE NECESITE'''
 
-# print("Valor función objetivo: ", m(clique))
-
-
 # simulate_circuit_with_not()
-
-#compare_rand_fun_with_not()
-
-#compare_rand_fun()
-
-#compare_low_end_fun()
