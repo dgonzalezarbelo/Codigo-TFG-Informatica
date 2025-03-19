@@ -28,7 +28,7 @@ def guardar_funciones(ruta, funciones):
             if not first:
                 json_text += ",\n"
             first = False
-            json_text += (f"\t\t[{funcion[0]}, {punt}]")
+            json_text += (f"\t\t[{funcion[0]}, {funcion[1]}]")
         json_text += ("\n\t]")
     json_text += ("}")
 
@@ -121,10 +121,21 @@ def guarda_genetico(nombre, poblaciones, puertas):
     if nombre == None:
         nombre = generar_nombre_experimento()
     for p in puertas:
-        ruta = os.path.join("experimentos", nombre)
-        with open(os.path.join(ruta, f"mejores_{p}.json")) as f:
-            f.write(poblaciones[p])
-    
+        ruta = os.path.join("experimentos/experimentos_n8", f"{nombre}_{p}.json")
+        json_text = "[\n"
+        for i in range(len(poblaciones[p])):
+            if i > 0:
+                json_text += ",\n"
+            json_text += "\t[\n"
+            [f1, f2, incr] = poblaciones[p][i]
+            json_text += f"\t\t[{f1[0]}, {f1[1]}],\n"
+            json_text += f"\t\t[{f2[0]}, {f2[1]}],\n"
+            json_text += f"\t\t{incr}\n"
+            json_text += "\t]"
+        json_text += "\n]"
+        with open(ruta, "w") as f:
+            f.write(json_text)
+
 def grafica_genetico(poblaciones, puertas):
     colores = {"AND": 'ro', "OR": 'bo'}
     fig = plt.figure(figsize = (8,5))
@@ -215,6 +226,20 @@ def almacena_fnds(ruta_nuevas, ruta_almacen):
     # Guardamos el almacen actualizado
     guardar_funciones(ruta_almacen, almacen)
 
+def filtrar_almacen_por_longitud(ruta_almacen="experimentos/experimentos_n8/almacen_fnds.json"):
+    almacen = leer_json_funciones(ruta_almacen)
+    LONG_MAXIMA = 150
+    nuevo_almacen = [[] for _ in range(len(almacen))]
+    for punt in range(len(almacen)):
+        for [fnd, puertas] in almacen[punt]:
+            if len(fnd) > LONG_MAXIMA:  # Descartamos la función si es demasiado larga
+                continue
+            nuevo_almacen[punt].append([fnd, puertas])
+    # Borramos el contenido del archivo por ahora
+    with open(ruta_almacen, "w") as f:
+        pass
+    guardar_funciones(ruta_almacen, nuevo_almacen)
+
 def grafica_puntuaciones_por_puertas(funciones):
     '''
     Función para graficar la puntuación máxima obtenida por número de puertas
@@ -245,3 +270,20 @@ def grafica_puntuaciones_por_puertas(funciones):
     # plt.savefig(os.path.join(ruta, "graficaAND.png"))
     plt.show()
     # plt.close()
+
+def leer_json_parejas(ruta):
+    # '''
+    # Lee un JSON donde tenemos listas de funciones (parejas FND-puertas) agrupadas por puntuaciones
+    # (las funciones le la lista n tienen puntuación n)
+    # Si el archivo está vacío o no tiene datos válidos, devuelve una lista vacía
+    # '''
+    if not os.path.exists(ruta) or os.stat(ruta).st_size == 0:
+        return []
+    
+    try:
+        with open(ruta, "r") as f:
+            data = json.load(f)
+    except json.JSONDecodeError:
+        return []   # En caso de que el JSON esté vacío o mal formado
+    
+    return data

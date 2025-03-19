@@ -153,26 +153,25 @@ def metrica_sensibilidad(fnd):
     return varianza
         
 
-def compara_aleatorias_con_simuladas(ini, fin):
+def compara_sesgo_aleatorias_con_simuladas(ini, fin, simuladas):
     N_FUNCIONES = 300
-    todas_simuladas = leer_fnds_por_puntuacion("experimentos/experimentos_n8/almacen_fnds.json")
-    simuladas, aleatorias = [], []
+    simuladas = simuladas[:N_FUNCIONES]
+    aleatorias = []
     xSim, ySim, xAl, yAl = [], [], [], []
-    for _ in range(N_FUNCIONES):
-        # Tomamos una función simulada
-        punt = random.randint(ini, fin)
-        while len(todas_simuladas[punt]) == 0:
-            punt = random.randint(ini, fin)
-        simuladas.append(random.choice(todas_simuladas[punt]))
-        xSim.append(punt)
+    for i in range(N_FUNCIONES):
+        # Añadimos la puntuación de cada simulada
+        xSim.append(simuladas[i][1])
 
         # Generamos una función aleatoria con la misma puntuación que la simulada
+        punt = random.randint(ini, fin)
         aleatorias.append(get_random_fnd_puntuacion(punt))
         xAl.append(punt)
-    for f in simuladas:
+    for i, [f, punt] in enumerate(simuladas):
         ySim.append(sesgo_de_cliques(f))
-    for f in aleatorias:
+        debug(f"{i + 1} sesgos de funciones simuladas calculados")
+    for i, f in enumerate(aleatorias):
         yAl.append(sesgo_de_cliques(f))
+        debug(f"{i + 1} sesgos de funciones aleatorias calculados")
 
     # Graficamos los resultados
     fig = plt.figure(figsize = (8,5))
@@ -183,4 +182,29 @@ def compara_aleatorias_con_simuladas(ini, fin):
     plt.legend()
     plt.xlabel("$\mu_x(f)$")
     plt.ylabel("Sesgo")
+    plt.show()
+
+def inter_heterogeneidad(f, g):
+    return M_CLIQUE - m(f, g)
+
+def grafica_relacion_puntuacion_heterogeneidad(ruta):
+    '''
+    Función que genera una gráfica que relaciona la métrica obtenida por una pareja
+    con la inter-heterogeneidad de la misma
+    '''
+    data = leer_json_parejas(ruta)
+    xs, ys = [], []
+    for info in data:
+        [[f, m_f], [g, m_g], punt] = info
+        xs.append(punt)
+        ys.append(inter_heterogeneidad(f, g))
+
+    # Graficamos los resultados
+    fig = plt.figure(figsize = (8,5))
+    plt.plot(xs, ys, 'ro', alpha = 0.5)
+    title = "Comparación de puntuación e inter-heterogeneidad de parejas de funciones"
+    plt.title(title)
+    plt.legend()
+    plt.xlabel("$\mu_x(f)$")
+    plt.ylabel("Inter-heterogeneidad")
     plt.show()

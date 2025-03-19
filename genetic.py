@@ -12,7 +12,7 @@ def particion_con_limite(suma, n, limite):
         raise ValueError("suma, n y limite deben ser positivos")
     if n * limite < suma:
         raise ValueError("No es posible generar la lista: limite es demasiado pequeño")
-    
+
     parts = []
     remaining_sum = suma
     remaining_parts = n
@@ -24,7 +24,7 @@ def particion_con_limite(suma, n, limite):
         max_val = min(limite, remaining_sum - (remaining_parts - 1))  # Máximo valor posible sin impedir completar M
         num = random.randint(min_val, max_val)  # Generamos un número aleatorio válido
         parts.append(num)
-        remaining_sum -= num 
+        remaining_sum -= num
         remaining_parts -= 1
 
     return parts
@@ -49,7 +49,7 @@ def get_random_fnd_puntuacion(puntuacion):
     # Primero elegimos la cantidad de cláusulas que queremos que tenga la función
     # No queremos que tenga ni más que la FND de cliqué ni más que la puntuación
     # (pues habría cláusulas inútiles)
-    max_clausulas = min(CLAUSULAS, puntuacion)    
+    max_clausulas = min(CLAUSULAS, puntuacion)
 
     # Teniendo en cuenta que la puntuación máxima de una cláusula es A_CLIQUE,
     # necesitamos, al menos, ceil(puntuacion // A_CLIQUE) cláusulas
@@ -61,7 +61,7 @@ def get_random_fnd_puntuacion(puntuacion):
         num_clausulas = random.randint(min_clausulas, max_clausulas)
         # Ahora queremos determinar la puntuación que va a aportar cada cláusula
         puntuaciones = particion_con_limite(puntuacion, num_clausulas, A_CLIQUE)
-        
+
         # Como el orden de las cláusulas no importa, las añadimos por tamaño,
         # de forma que una nueva cláusula no pueda absorber a una anterior
         puntuaciones.sort()
@@ -79,7 +79,7 @@ def get_random_fnd_puntuacion(puntuacion):
                 cur = random.sample(literales, puntuaciones[i])
                 for x in cur:
                     literales.remove(x)
-                
+
                 while random.uniform(0, 1) < PROB_NEG and len(cur) < K:
                     literal_negar = random.choice(literales)
                     literales.remove(literal_negar)
@@ -91,32 +91,38 @@ def get_random_fnd_puntuacion(puntuacion):
         fnd = reduce(fnd)
         if m(fnd) != puntuacion:
             fallo = True
-    
+
     fnd.sort(key=lambda x: (len(x), sorted(x, key=abs)))  # TODO Lo de sorted no hace falta, es para depurar más fácilmente
     assert(m(fnd) == puntuacion)
     return fnd
 
-def poblacion_inicial(ini, fin, n, puerta):
+def poblacion_inicial(ini, fin, n):
     '''
     Función que devuelve una población inicial de tamaño n mezclando FNDs con puntuaciones
     en el rango [ini, fin] combinadas con la puerta recibida como argumento
     '''
     ret = []
-    for i in range(1, n + 1):
-        punt1 = random.randint(ini, fin)
-        punt2 = random.randint(ini, fin)
-        f1 = get_random_fnd_puntuacion(punt1)
-        f2 = get_random_fnd_puntuacion(punt2)
-        if puerta == 'OR':
-            incremento = m(combOR(f1, f2)) - max(punt1, punt2)
-        elif puerta == 'AND':
-            incremento = m(combAND_with_not(f1, f2)) - max(punt1, punt2)
-        else:
-            raise ValueError("La puerta debe ser OR o AND")
-        ret.append([[f1, punt1], [f2, punt2], incremento])
-        if i % 10 == 0:
-            print(f"{i} parejas de funciones generadas")
+    for _ in range(n):
+        punt = random.randint(ini, fin)
+        f = get_random_fnd_puntuacion(punt)
+        ret.append([f, punt])
     return ret
+    # ret = []
+    # for i in range(1, n + 1):
+    #     punt1 = random.randint(ini, fin)
+    #     punt2 = random.randint(ini, fin)
+    #     f1 = get_random_fnd_puntuacion(punt1)
+    #     f2 = get_random_fnd_puntuacion(punt2)
+    #     if puerta == 'OR':
+    #         incremento = m(combOR(f1, f2)) - max(punt1, punt2)
+    #     elif puerta == 'AND':
+    #         incremento = m(combAND_with_not(f1, f2)) - max(punt1, punt2)
+    #     else:
+    #         raise ValueError("La puerta debe ser OR o AND")
+    #     # ret.append([[f1, punt1], [f2, punt2], incremento])
+    #     if i % 10 == 0:
+    #         print(f"{i} parejas de funciones generadas")
+    # return ret
 
 def mutacion_intercambio(f, g):
     '''Función que intercambia dos cláusulas aleatorias de dos FNDs'''
@@ -128,11 +134,21 @@ def mutacion_intercambio(f, g):
 
     return f, g
 
-def genetico(ini, fin, pob_inicial = None):
+def mutacion_negacion(f):
+    '''Función que niega algunos de los litearles de f'''
+    PROB_NEGACION = 0.01
+    for clausula in f:
+        for literal in clausula:
+            if random.uniform(0, 1) < PROB_NEGACION:
+                literal *= -1
+
+    return reduce(f)
+
+def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
     '''
     Algoritmo genético para buscar pares de funciones con puntuaciones en un rango dado
     que generen el máximo incremento de la métrica
-    
+
     Parámetros: TODO Dejar esto más limpio, por ahora solo lo pongo para ubicarme yo con el tema
         Rango: par de enteros indicando el rango de puntuaciones de las funciones
         Fitness: función que evalúa "cómo de buena" es una pareja de funciones (a priori la métrica sintáctica)
@@ -151,7 +167,7 @@ def genetico(ini, fin, pob_inicial = None):
                 Número de literales a negar
             Mutación de intercambio de cláusulas:
                 Elección de qué cláusulas intercambiar
- 
+
     Genotipo: Listas de varios elementos
         -> [FND1, puntuación(FND1)]
         -> [FND2, puntuación(FND2)]
@@ -166,11 +182,13 @@ def genetico(ini, fin, pob_inicial = None):
     POPULATION_SIZE = 300
     # POPULATION_SIZE = 30
     NUM_GENERATIONS = 300
+    # NUM_GENERATIONS = 15
     T = 4   # Tamaño de los torneos para la selección
     CLAVE = lambda gen: gen[2]  # Tomamos máximos según el incremento de la métrica (negativo para tomar el máximo)
     CLAVE_NEG = lambda gen: -CLAVE(gen)
-    MAX_PAUSA = 30  # Máximo número de iteraciones que permitimios sin mejora
-    PROB_MUT = 0 # Probabilidad de mutación
+    # MAX_PAUSA = 30  # Máximo número de iteraciones que permitimios sin mejora
+    MAX_PAUSA = NUM_GENERATIONS  # Máximo número de iteraciones que permitimios sin mejora
+    PROB_MUT = 0.05 if mutacion else 0 # Probabilidad de mutación
     # PROB_MUT = 0.05 # Probabilidad de mutación
 
     xs, ys, zs = {}, {}, {}   # Para graficar los resultados
@@ -180,18 +198,26 @@ def genetico(ini, fin, pob_inicial = None):
     mutaciones, mutaciones_fallidas = 0, 0
     tiempo, generaciones_computadas = 0, 0
 
-    max_m, mejor_incr, prev_incr, it_sin_mejora = {}, {}, {}, {}
+    max_m, prev_m, it_sin_mejora = {}, {}, {}
     for p in PUERTAS_HABILITADAS:
-        max_m[p], mejor_incr[p], prev_incr[p], it_sin_mejora[p] = 0, 0, 0, 0
-    
+        max_m[p], prev_m[p], it_sin_mejora[p] = 0, 0, 0
+
     # Lo primero que tenemos que conseguir es una población inicial para arrancar el algoritmo
-    poblaciones = {}
+    # Todos los siguientes tipos son diccionarios que asignan valores a cada puerta habilitada
+    #   mezcladas almacena las parejas que ya se han mezclado (para evitar repeticiones)
+    #   parejas_formadas almacena los resultados de dichas mezclas
+    #   incrementos asocia a cada función la mayor puntuación que ha alcanzado al mezclarse con otra función (inicialmente la puntuación de la propia función, pues se obtiene al mezclarla consigo mismo)
+    poblaciones, mezcladas, parejas_formadas, incrementos = {}, {}, {}, {}
     for p in PUERTAS_HABILITADAS:
         if pob_inicial == None:
-            poblaciones[p] = poblacion_inicial(ini, fin, POPULATION_SIZE, p)
+            poblaciones[p] = poblacion_inicial(ini, fin, POPULATION_SIZE)
         else:
-            poblaciones[p] = pob_inicial.copy()
-    
+            random.shuffle(pob_inicial)
+            poblaciones[p] = pob_inicial[:POPULATION_SIZE]
+        mezcladas[p] = set()
+        parejas_formadas[p] = []
+        incrementos[p] = [i for i in range(POPULATION_SIZE)]
+
     print("Poblaciones iniciales generadas")
     print("Iniciando algoritmo genético")
 
@@ -199,62 +225,64 @@ def genetico(ini, fin, pob_inicial = None):
         start_time = time.perf_counter()
         generaciones_computadas += 1
 
-        prev_incr[p] = mejor_incr[p]
+        prev_m[p] = max_m[p]
         for p in PUERTAS_HABILITADAS:
             for it in range(ITERACIONES[p]):
-                # Selección por torneo de T individuos
-                torneo1 = random.sample(poblaciones[p], T)
-                torneo2 = random.sample(poblaciones[p], T)
-                gen1 = max(torneo1, key=CLAVE_NEG)
-                gen2 = max(torneo2, key=CLAVE_NEG)
-                for i in range(2):
-                    for j in range(2):
-                        f, g = gen1[i][0], gen2[j][0]
-                        m_f, m_g = gen1[i][1], gen2[j][1]
-                        comb = COMBINACIONES[p](f, g)   # Juntamos las dos funciones a través de la puerta
-                        m_comb = m(comb)
-                        incremento = m_comb - max(m_f, m_g)
-                        max_m[p] = max(max_m[p], m_comb)
-                        mejor_incr[p] = max(incremento, mejor_incr[p])
-                        
-                        gen = [[f, m_f], [g, m_g], incremento]
-                        poblaciones[p].append(gen)
+                '''Selección por torneo de T individuos'''
+                # torneo_f = random.sample(range(len(poblaciones[p])), T)
+                # torneo_g = random.sample(range(len(poblaciones[p])), T)
+                # i_f = max(torneo_f, key=lambda i: poblaciones[p][i][1])
+                # i_g = max(torneo_g, key=lambda i: poblaciones[p][i][1])
 
-                        xs[p].append(m_f)
-                        ys[p].append(m_g)
-                        zs[p].append(incremento)
-                        
-                        # Mutación TODO Esto se puede encapsular mejor
-                        # if random.uniform(0, 1) < PROB_MUT:
-                        #     mutaciones += 1
-                        #     fmut, gmut = mutacion_intercambio(f, g)
-                        #     m_fmut, m_gmut = m(fmut), m(gmut)
-                        #     if min(m_fmut, m_gmut) >= ini and max(m_fmut, m_gmut) <= fin:
-                        #         comb = COMBINACIONES[p](fmut, gmut)   # Juntamos las dos funciones a través de la puerta
-                        #         m_comb = m(comb)
-                        #         incremento = m_comb - max(m_fmut, m_gmut)
-                        #         max_m[p] = max(max_m[p], m_comb)
-                        #         mejor_incr[p] = max(incremento, mejor_incr[p])
-                                
-                        #         gen = [[fmut, m_fmut], [gmut, m_gmut], incremento]
-                        #         poblaciones[p].append(gen)
+                '''Selección aleatoria'''
+                i_f = random.choice(range(len(poblaciones[p])))
+                i_g = random.choice(range(len(poblaciones[p])))
 
-                        #         xs[p].append(m_fmut)
-                        #         ys[p].append(m_gmut)
-                        #         zs[p].append(incremento)
-                        #     else:
-                        #         mutaciones_fallidas += 1
+                [f, m_f] = poblaciones[p][i_f]
+                [g, m_g] = poblaciones[p][i_g]
 
-            poblaciones[p].sort(key=CLAVE_NEG)
-            while len(poblaciones[p]) > POPULATION_SIZE:
-                poblaciones[p].pop()   # Nos quedamos con los mejores
+                # Comprobamos si ya hemos mezclado las dos funciones, para en tal caso no hacerlo de nuevo
+                if (min(i_f, i_g), max(i_f, i_g)) in mezcladas[p]:
+                    continue
+                mezcladas[p].add((min(i_f, i_g), max(i_f, i_g)))
+                h = COMBINACIONES[p](f, g)   # Juntamos las dos funciones a través de la puerta
+                m_h = m(h)
+                max_m[p] = max(max_m[p], m_h)
+                parejas_formadas[p].append([[f, m_f], [g, m_g], m_h])
+
+                incrementos[p][i_f] = max(incrementos[p][i_f], m_h)
+                incrementos[p][i_g] = max(incrementos[p][i_g], m_h)
+
+                xs[p].append(m_f)
+                ys[p].append(m_g)
+                zs[p].append(m_h)
+
+                # Vemos si la función generada está dentro del rango, para en tal caso incluirla
+                if ini <= m_h and m_h <= fin:
+                    poblaciones[p].append([h, m_h])
+                    incrementos[p].append(m_h)
+
+                '''Mutación'''
+                if random.uniform(0, 1) < PROB_MUT:
+                    mutaciones += 1
+                    mut = mutacion_negacion(h)
+                    m_mut = m(mut)
+                    if ini <= m_mut and m_mut <= fin:
+                        poblaciones[p].append([mut, m_mut])
+                        incrementos[p].append(m_mut)
+                    else:
+                        mutaciones_fallidas += 1
+
+            # poblaciones[p].sort(key=CLAVE_NEG)
+            # while len(poblaciones[p]) > POPULATION_SIZE:
+            #     poblaciones[p].pop()   # Nos quedamos con los mejores
 
         # Imprimir estadísticas
         end_time = time.perf_counter()
         tiempo += end_time - start_time
         print(f"Generación {generation}: Tiempo = {end_time - start_time:.2f} s")
         for p in PUERTAS_HABILITADAS:
-            print(f"    Mejor incremento con puerta {p}: {CLAVE(max(poblaciones[p], key=CLAVE))}")
+            print(f"    Mejor puntuación con puerta {p}: {max_m[p]}")
         print(f"Mutaciones: {mutaciones}")
         print(f"Mutaciones fallidas: {mutaciones_fallidas}")
 
@@ -277,7 +305,7 @@ def genetico(ini, fin, pob_inicial = None):
         # También comprobamos si se ha alcanzado la puntuación máxima
         atascados = 0
         for p in PUERTAS_HABILITADAS:
-            if mejor_incr[p] == prev_incr[p]:
+            if max_m[p] == prev_m[p]:
                 it_sin_mejora[p] += 1
                 if it_sin_mejora[p] > MAX_PAUSA:
                     atascados += 1
@@ -297,12 +325,16 @@ def genetico(ini, fin, pob_inicial = None):
             print("Valor máximo de la métrica alcanzado")
             break
 
+    # Fin del algoritmo genético
+
     print("Algoritmo genético completado")
     print(f"Tiempo total de ejecución: {tiempo} segundos")
     print(f"Generaciones totales computadas: {generaciones_computadas}")
 
-    guarda_genetico(None, poblaciones, PUERTAS_HABILITADAS)
-    grafica_genetico(poblaciones, PUERTAS_HABILITADAS)
+    for par in PUERTAS_HABILITADAS:
+        parejas_formadas[p].sort(key=lambda par: par[2], reverse=True)
+    guarda_genetico(nombre, parejas_formadas, PUERTAS_HABILITADAS)
+    grafica_genetico(parejas_formadas, PUERTAS_HABILITADAS)
 
 def perdida_de_puntuacion(f):
     '''
@@ -327,7 +359,7 @@ def grafica_perdidas(funciones):
         for f in lista:
             xs.append(punt)
             ys.append(perdida_de_puntuacion(f))
-    
+
     fig = plt.figure(figsize = (8,5))
     plt.plot(xs, ys, 'ro', alpha = 0.5)
     # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
@@ -338,3 +370,13 @@ def grafica_perdidas(funciones):
     plt.ylabel("Exceso de literales")
     # plt.savefig(os.path.join(ruta, "graficaAND.png"))
     plt.show()
+
+def obtener_mejores_aleatorias(ini, fin):
+    genetico(ini, fin, nombre=f"mejores_aleatorias_{ini}-{fin}")
+
+def obtener_mejores_simuladas(ini, fin):
+    almacen = leer_json_funciones("experimentos/experimentos_n8/almacen_fnds.json")
+    pob_inicial = []
+    for punt in range(ini, fin):
+        pob_inicial += almacen[punt]
+    genetico(ini, fin, pob_inicial, nombre=f"mejores_simuladas_{ini}-{fin}", mutacion=False)

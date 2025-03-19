@@ -11,7 +11,7 @@ from collections import defaultdict
 import time
 from experimentos import *
 
-N = 7 # Vértices
+N = 8 # Vértices
 K = N // 2 # Tamaño del clique
 A = N * (N-1) // 2 # Aristas en el grafo
 A_CLIQUE = K * (K-1) // 2 # Aristas en un cliqué de tamaño K
@@ -64,15 +64,15 @@ def common_literals(f, g) :
     return res
 
 # Calcula la métrica. Usa el algoritmo húngaro para asignar el máximo posible
-def m(f) :
+def m(f, g=clique) :
     n = len(f)
-    m = len(clique)
+    m = len(g)
     # Costes negativos para maximizar
     # min (f(x)) = -max(-f(x))
     if n <= m : 
-        mat = [[-common_literals(f[i], clique[j]) for j in range(m)] for i in range(n)]
+        mat = [[-common_literals(f[i], g[j]) for j in range(m)] for i in range(n)]
     else : 
-        mat = [[-common_literals(f[i], clique[j]) for i in range(n)] for j in range(m)]
+        mat = [[-common_literals(f[i], g[j]) for i in range(n)] for j in range(m)]
     #for i in mat : print(i)
     #print(n, m)
     res = -matching(mat)

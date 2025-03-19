@@ -49,8 +49,14 @@ def prueba_grafica_sesgo():
         funciones[m_h].append(h)
     grafica_sesgo(funciones)
 
+def prueba_diferencia_sesgo_simuladas_aleatorias():
+    parejas = leer_json_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json")
+    simuladas = []
+    for [[f, m_f], [g, m_g], punt] in parejas:
+        simuladas.append([f, m_f])
+        simuladas.append([g, m_g])
+    compara_sesgo_aleatorias_con_simuladas(100, 150, simuladas)
+
 def prueba_sensibilidad():
     fnd = [[1, 2, 3], [4, 5]]
     print(metrica_sensibilidad(fnd))
-
-prueba_sensibilidad()
