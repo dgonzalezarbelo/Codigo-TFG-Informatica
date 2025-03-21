@@ -1,7 +1,10 @@
 from syntactic import *
 from genetic import *
 from experimentos import *
-from metrics import *
+from metricas.inter_solapamiento import *
+from metricas.intra_solapamiento import *
+from metricas.sensibilidad import *
+from metricas.sesgo import *
 
 def prueba_genetico():
     funciones = leer_fnds_por_puntuacion('experimentos/experimentos_n8/Simulacion_300_iteraciones/funciones_fnd.json')
@@ -25,8 +28,8 @@ def prueba_perdidas():
     for _ in range(1, 3000):
         m_f = random.randint(1, 150)
         m_g = random.randint(1, 150)
-        f = get_random_fnd_puntuacion(m_f)
-        g = get_random_fnd_puntuacion(m_g)
+        f = genera_pseudoaleatoria_puntuacion(m_f)
+        g = genera_pseudoaleatoria_puntuacion(m_g)
         h = combAND_with_not(f, g)
         m_h = m(h)
         while len(funciones) <= m_h:
@@ -40,8 +43,8 @@ def prueba_grafica_sesgo():
     for _ in range(1, 3000):
         m_f = random.randint(1, 150)
         m_g = random.randint(1, 150)
-        f = get_random_fnd_puntuacion(m_f)
-        g = get_random_fnd_puntuacion(m_g)
+        f = genera_pseudoaleatoria_puntuacion(m_f)
+        g = genera_pseudoaleatoria_puntuacion(m_g)
         h = combAND_with_not(f, g)
         m_h = m(h)
         while len(funciones) <= m_h:
@@ -50,12 +53,12 @@ def prueba_grafica_sesgo():
     grafica_sesgo(funciones)
 
 def prueba_diferencia_sesgo_simuladas_aleatorias():
-    parejas = leer_json_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json")
+    parejas = leer_json_parejas("experimentos/experimentos_n8/mejores_simuladas_1-50_AND.json")
     simuladas = []
     for [[f, m_f], [g, m_g], punt] in parejas:
         simuladas.append([f, m_f])
         simuladas.append([g, m_g])
-    compara_sesgo_aleatorias_con_simuladas(100, 150, simuladas)
+    compara_sesgo_aleatorias_con_simuladas(1, 50, simuladas)
 
 def prueba_sensibilidad():
     fnd = [[1, 2, 3], [4, 5]]

@@ -36,19 +36,6 @@ def guardar_funciones(ruta, funciones):
     with open(ruta, "w") as f:
         f.write(json_text)
 
-    # with open(ruta, "w") as f:
-    #     f.write("{")
-    #     for punt, lista in enumerate(funciones):
-    #         f.write(f'\"{punt}\": [')
-    #         for funcion in lista:
-    #             f.write(f"{funcion[0]},")
-    #         f.write("]")
-    #     f.write("}")
-    # dict_funciones = {str(i) : lista for i, lista in enumerate(funciones)}
-    # # Guardar FNDs en JSON
-    # with open(ruta, "w") as f:
-    #     json.dump(dict_funciones, f, indent=4, separators=(",",": "))
-
 def guardar_coordenadas(ruta, xAND, yAND, xOR, yOR):
     # Guardar coordenadas en CSV
     if xAND != None and yAND != None:
@@ -190,6 +177,13 @@ def leer_fnds_por_puntuacion(ruta):
         ret.append(fnds)
     
     return ret
+
+def funciones_de_almacen_en_rango(ini, fin):
+    almacen = leer_json_funciones("experimentos/experimentos_n8/almacen_fnds.json")
+    funciones = []
+    for punt in range(ini, fin):
+        funciones += almacen[punt]
+    return funciones
 
 def almacena_fnds(ruta_nuevas, ruta_almacen):
     '''

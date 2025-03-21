@@ -29,7 +29,7 @@ def particion_con_limite(suma, n, limite):
 
     return parts
 
-def get_random_fnd_puntuacion(puntuacion):
+def genera_pseudoaleatoria_puntuacion(puntuacion):
     '''
     Para generar una FND con la puntuación deseada, vamos a hacer lo siguiente:
     De cada cláusula de la FND de cliqué vamos a tomar un subconjunto de literales.
@@ -39,7 +39,7 @@ def get_random_fnd_puntuacion(puntuacion):
     if puntuacion > CLAUSULAS * A_CLIQUE:
         raise ValueError(f"La puntuación no puede ser mayor que la de cliqué ({CLAUSULAS * A_CLIQUE})")
 
-    PROB_NEG = 0.1
+    PROB_NEG = 1
 
     # Por este método, por las reducciones, es posible perder puntuación
     # No obstante, es improbable, así que se puede repetir el proceso hasta que funcione
@@ -104,7 +104,7 @@ def poblacion_inicial(ini, fin, n):
     ret = []
     for _ in range(n):
         punt = random.randint(ini, fin)
-        f = get_random_fnd_puntuacion(punt)
+        f = genera_pseudoaleatoria_puntuacion(punt)
         ret.append([f, punt])
     return ret
     # ret = []
@@ -188,6 +188,7 @@ def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
     CLAVE_NEG = lambda gen: -CLAVE(gen)
     # MAX_PAUSA = 30  # Máximo número de iteraciones que permitimios sin mejora
     MAX_PAUSA = NUM_GENERATIONS  # Máximo número de iteraciones que permitimios sin mejora
+    MAX_SIZE = 150
     PROB_MUT = 0.05 if mutacion else 0 # Probabilidad de mutación
     # PROB_MUT = 0.05 # Probabilidad de mutación
 
@@ -246,6 +247,7 @@ def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
                     continue
                 mezcladas[p].add((min(i_f, i_g), max(i_f, i_g)))
                 h = COMBINACIONES[p](f, g)   # Juntamos las dos funciones a través de la puerta
+                
                 m_h = m(h)
                 max_m[p] = max(max_m[p], m_h)
                 parejas_formadas[p].append([[f, m_f], [g, m_g], m_h])
@@ -258,7 +260,7 @@ def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
                 zs[p].append(m_h)
 
                 # Vemos si la función generada está dentro del rango, para en tal caso incluirla
-                if ini <= m_h and m_h <= fin:
+                if ini <= m_h and m_h <= fin and len(h) <= MAX_SIZE:
                     poblaciones[p].append([h, m_h])
                     incrementos[p].append(m_h)
 
@@ -267,7 +269,7 @@ def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
                     mutaciones += 1
                     mut = mutacion_negacion(h)
                     m_mut = m(mut)
-                    if ini <= m_mut and m_mut <= fin:
+                    if ini <= m_mut and m_mut <= fin and len(mut) <= MAX_SIZE:
                         poblaciones[p].append([mut, m_mut])
                         incrementos[p].append(m_mut)
                     else:
@@ -371,12 +373,9 @@ def grafica_perdidas(funciones):
     # plt.savefig(os.path.join(ruta, "graficaAND.png"))
     plt.show()
 
-def obtener_mejores_aleatorias(ini, fin):
-    genetico(ini, fin, nombre=f"mejores_aleatorias_{ini}-{fin}")
+def obtener_mejores_pseudoaleatorias(ini, fin):
+    genetico(ini, fin, nombre=f"mejores_pseudoaleatorias_{ini}-{fin}")
 
 def obtener_mejores_simuladas(ini, fin):
-    almacen = leer_json_funciones("experimentos/experimentos_n8/almacen_fnds.json")
-    pob_inicial = []
-    for punt in range(ini, fin):
-        pob_inicial += almacen[punt]
+    pob_inicial = funciones_de_almacen_en_rango(ini, fin)
     genetico(ini, fin, pob_inicial, nombre=f"mejores_simuladas_{ini}-{fin}", mutacion=False)

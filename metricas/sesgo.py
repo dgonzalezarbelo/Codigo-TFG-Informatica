@@ -55,10 +55,17 @@ def lista_a_tupla(lista):
 
 def sesgo_de_cliques(fnd):
     '''
-    Dada una función, calcula el mínimo enredo que tiene bajo el conocimiento de los estados de los cliqués
+    1ª Versión
+        Dada una función, calcula el mínimo enredo que tiene bajo el conocimiento de los estados de los cliqués
+    2ª Versión
+        Dada una función, calcula la varianza de enredo que tiene bajo el conocimiento de los estados de los cliqués
+    3ª Versión
+        Calcula la diferencia entre el sesgo mínimo y máximo
+    4ª Versión
+        La media
     TODO Explicar mejor
     '''
-    min_restricciones = 2**A_CLIQUE
+    sesgos = []
     for s in subsets:
         aristas = []
         for i in range(len(s)):
@@ -76,16 +83,10 @@ def sesgo_de_cliques(fnd):
             restricciones.add(lista_a_tupla(restringe_fnd(fnd, asignaciones)))
         # debug(f"s -> {s}")
         # debug(f"nº restricciones -> {len(restricciones)}")
-        min_restricciones = min(min_restricciones, len(restricciones))
-    return min_restricciones
-
-def pruebas_metricas():
-    # fnd = [[idx[1][2], -idx[1][3], idx[1][4]], [idx[1][2], -idx[1][5]]]
-    # asignaciones = {idx[1][2]: 1, idx[1][3]: 0, idx[1][4]: 1}
-    # print(restringe_fnd(fnd, asignaciones))
-    # print(sesgo_de_cliques(clique))
-    fnd = [[idx[1][2], idx[1][3], idx[1][4], idx[2][3], idx[2][4], idx[3][4]]]
-    print(sesgo_de_cliques(fnd))
+        sesgos.append(len(restricciones))
+    media = sum(sesgos) / len(sesgos)
+    varianza = sum((s - media) ** 2 for s in sesgos) / len(sesgos)
+    return [max(sesgos) - min(sesgos), min(sesgos), media]
 
 def grafica_sesgo(funciones):
     '''
@@ -93,65 +94,48 @@ def grafica_sesgo(funciones):
     y cada elemento es una lista de funciones con dicha puntuación
     '''
     por_punt = [[] for _ in range(len(funciones))]
-    xs, ys = [], []
+    xs, max_mins, mins, medias = [], [], [], []
     for punt, lista in enumerate(funciones):
         debug(punt)
         for f in lista:
             xs.append(punt)
-            ys.append(sesgo_de_cliques(f))
+            [max_min, min, media] = sesgo_de_cliques(f)
+            max_mins.append(max_min)
+            mins.append(min)
+            medias.append(media)
     
     fig = plt.figure(figsize = (8,5))
-    plt.plot(xs, ys, 'ro', alpha = 0.5)
+    plt.plot(xs, medias, 'ro', alpha = 0.5)
     # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
-    title = "Relación entre puntuación y sesgo"
+    title = "Relación entre puntuación y sesgo medio"
     plt.title(title)
     # plt.legend()
     plt.xlabel("Puntuación")
-    plt.ylabel("Sesgo")
+    plt.ylabel("Sesgo medio")
     # plt.savefig(os.path.join(ruta, "graficaAND.png"))
     plt.show()
 
-def evalua_fnd(fnd, valores):
-    for clausula in fnd:
-        acepta = True
-        for literal in clausula:
-            if (literal > 0 and valores[literal] == 1) or (literal < 0 and valores[abs(literal)] == -1):
-                continue
-            else:
-                acepta = False
-        if acepta:
-            return True
-    return False
+    fig = plt.figure(figsize = (8,5))
+    plt.plot(xs, max_mins, 'ro', alpha = 0.5)
+    # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
+    title = "Relación entre puntuación y sesgo máximo - sesgo mínimo"
+    plt.title(title)
+    # plt.legend()
+    plt.xlabel("Puntuación")
+    plt.ylabel("Sesgo máximo - sesgo mínimo")
+    # plt.savefig(os.path.join(ruta, "graficaAND.png"))
+    plt.show()
 
-def metrica_sensibilidad(fnd):
-    '''
-    Función que, dada una función booleana representada como FND,
-    calcula su sensibilidad a cliqué, probando con todos los grafos de N vértices
-    TODO Escribir bien por algún lado la definición de la métrica
-    '''
-    sensibilidades = [0 for _ in range(len(clique))]
-    for G in range(1 << A):
-        if (G + 1) % 100000 == 0:
-            debug(G + 1)
-        valores = [0] + [0 for _ in range(A)]
-        for i in range(1, A + 1):
-            valores[i] = (G >> i) & 1   # Tomamos de la representación de G los valores de cada input
-        
-        # Tenemos que probar para cada cliqué C si f(G) != f(G union C)
-        for C in range(len(clique)):
-            new_valores = valores.copy()
-            for literal in clique[C]:
-                new_valores[literal] = 1
-            out1 = evalua_fnd(fnd, valores)
-            out2 = evalua_fnd(fnd, new_valores)
-            if out1 != out2:
-                sensibilidades[C] += 1
-
-    media = sum(sensibilidades) / len(clique)
-    varianza = sum((s - media) ** 2 for s in sensibilidades) / len(clique)
-
-    return varianza
-        
+    fig = plt.figure(figsize = (8,5))
+    plt.plot(xs, mins, 'ro', alpha = 0.5)
+    # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
+    title = "Relación entre puntuación y sesgo mínimo"
+    plt.title(title)
+    # plt.legend()
+    plt.xlabel("Puntuación")
+    plt.ylabel("Sesgo mínimo")
+    # plt.savefig(os.path.join(ruta, "graficaAND.png"))
+    plt.show()
 
 def compara_sesgo_aleatorias_con_simuladas(ini, fin, simuladas):
     N_FUNCIONES = 300
@@ -164,7 +148,7 @@ def compara_sesgo_aleatorias_con_simuladas(ini, fin, simuladas):
 
         # Generamos una función aleatoria con la misma puntuación que la simulada
         punt = random.randint(ini, fin)
-        aleatorias.append(get_random_fnd_puntuacion(punt))
+        aleatorias.append(genera_pseudoaleatoria_puntuacion(punt))
         xAl.append(punt)
     for i, [f, punt] in enumerate(simuladas):
         ySim.append(sesgo_de_cliques(f))
@@ -182,29 +166,4 @@ def compara_sesgo_aleatorias_con_simuladas(ini, fin, simuladas):
     plt.legend()
     plt.xlabel("$\mu_x(f)$")
     plt.ylabel("Sesgo")
-    plt.show()
-
-def inter_heterogeneidad(f, g):
-    return M_CLIQUE - m(f, g)
-
-def grafica_relacion_puntuacion_heterogeneidad(ruta):
-    '''
-    Función que genera una gráfica que relaciona la métrica obtenida por una pareja
-    con la inter-heterogeneidad de la misma
-    '''
-    data = leer_json_parejas(ruta)
-    xs, ys = [], []
-    for info in data:
-        [[f, m_f], [g, m_g], punt] = info
-        xs.append(punt)
-        ys.append(inter_heterogeneidad(f, g))
-
-    # Graficamos los resultados
-    fig = plt.figure(figsize = (8,5))
-    plt.plot(xs, ys, 'ro', alpha = 0.5)
-    title = "Comparación de puntuación e inter-heterogeneidad de parejas de funciones"
-    plt.title(title)
-    plt.legend()
-    plt.xlabel("$\mu_x(f)$")
-    plt.ylabel("Inter-heterogeneidad")
     plt.show()

@@ -57,6 +57,7 @@ clique = generate_fun_clique(subsets)
 
 
 # Calcula cuántos literales de f están en g
+# TODO No sé si es relevante pero igual esto se puede hcaer más rápido si los inputs vienen ordenados
 def common_literals(f, g) :
     res = 0
     for i in f :
@@ -158,6 +159,21 @@ def get_rand_fun_with_not() :
         for j in neg : res[i][j] *= -1
     return res
 
+# Genera una función realmente aleatoria
+def genera_funcion_aleatoria():
+    n_clausulas = random.randint(1, CLAUSULAS)
+    fnd = []
+    inputs = [i for i in range(1, A + 1)]
+    for i in range(n_clausulas):
+        l_clausula = random.randint(1, A)
+        literales = random.sample(inputs, l_clausula)
+        negaciones = random.randint(0, l_clausula)
+        literales_negar = random.sample(range(l_clausula), negaciones)
+        for i in literales_negar:
+            literales[i] *= -1
+        fnd.append(literales)
+    return reduce(fnd)
+
 # AND con NOT
 def combAND_with_not(f, g) :
     aux = []
@@ -205,7 +221,7 @@ def compare_rand_fun() :
 
 # Compara funciones aleatorias con NOT
 def compare_rand_fun_with_not() :
-    iter = 10000
+    iter = 1000
     fig = plt.figure(figsize = (8,5))
     x = []
     y = []
@@ -213,8 +229,8 @@ def compare_rand_fun_with_not() :
     maxi_and = -1
     for _ in range(iter) :
         print("Iteración número:", _+1)
-        f = reduce(get_rand_fun_with_not())
-        g = reduce(get_rand_fun_with_not())
+        f = reduce(genera_funcion_aleatoria())
+        g = reduce(genera_funcion_aleatoria())
         h = combAND_with_not(f, g)
         m1 = m(f)
         m2 = m(g)
@@ -325,11 +341,12 @@ def simulate_circuit_with_not() :
     CLAVE_NEG = lambda f: -CLAVE(f)
     or_iter = 15
     and_iter = 15
-    max_size = 2 * CLAUSULAS
+    # max_size = 2 * CLAUSULAS
+    max_size = 1500    # TODO Esto es para probar
     limit = 300
-    # iter = 1000
+    iter = 300
     # iter = 50
-    iter = 10
+    # iter = 10
     xOR = []; xAND = []
     yOR = []; yAND = []
 
@@ -390,6 +407,7 @@ def simulate_circuit_with_not() :
         
         S.sort(key = CLAVE_NEG)
         while len(S) > limit : S.pop()
+        print(f"Máxima puntuación: {S[0][1]}")
     
     guardar_simulacion(None, fnds, iter, xAND, yAND, xOR, yOR)
     
