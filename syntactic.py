@@ -65,7 +65,7 @@ def common_literals(f, g) :
     return res
 
 # Calcula la métrica. Usa el algoritmo húngaro para asignar el máximo posible
-def m(f, g=clique) :
+def m(f, g=clique, devuelve_asignacion=False) :
     n = len(f)
     m = len(g)
     # Costes negativos para maximizar
@@ -76,8 +76,12 @@ def m(f, g=clique) :
         mat = [[-common_literals(f[i], g[j]) for i in range(n)] for j in range(m)]
     #for i in mat : print(i)
     #print(n, m)
-    res = -matching(mat)
-    return res
+    if not devuelve_asignacion:
+        res = -matching(mat, devuelve_asignacion)
+        return res
+    else:
+        res, asignacion = matching(mat, devuelve_asignacion)
+        return [-res, asignacion]
 
 # Comprueba si f es prefijo de g
 def is_prefix(f, g) :
@@ -161,6 +165,7 @@ def get_rand_fun_with_not() :
 
 # Genera una función realmente aleatoria
 def genera_funcion_aleatoria():
+    '''Genera una función totalmente aleatoria'''
     n_clausulas = random.randint(1, CLAUSULAS)
     fnd = []
     inputs = [i for i in range(1, A + 1)]

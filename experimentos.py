@@ -178,8 +178,25 @@ def leer_fnds_por_puntuacion(ruta):
     
     return ret
 
-def funciones_de_almacen_en_rango(ini, fin):
-    almacen = leer_json_funciones("experimentos/experimentos_n8/almacen_fnds.json")
+def leer_json_parejas(ruta):
+    # '''
+    # Lee un JSON donde tenemos listas de funciones (parejas FND-puertas) agrupadas por puntuaciones
+    # (las funciones le la lista n tienen puntuación n)
+    # Si el archivo está vacío o no tiene datos válidos, devuelve una lista vacía
+    # '''
+    if not os.path.exists(ruta) or os.stat(ruta).st_size == 0:
+        return []
+    
+    try:
+        with open(ruta, "r") as f:
+            data = json.load(f)
+    except json.JSONDecodeError:
+        return []   # En caso de que el JSON esté vacío o mal formado
+    
+    return data
+
+def funciones_de_almacen_en_rango(ini, fin, ruta_almacen = "experimentos/experimentos_n8/almacen_fnds.json"):
+    almacen = leer_json_funciones(ruta_almacen)
     funciones = []
     for punt in range(ini, fin):
         funciones += almacen[punt]
@@ -264,20 +281,3 @@ def grafica_puntuaciones_por_puertas(funciones):
     # plt.savefig(os.path.join(ruta, "graficaAND.png"))
     plt.show()
     # plt.close()
-
-def leer_json_parejas(ruta):
-    # '''
-    # Lee un JSON donde tenemos listas de funciones (parejas FND-puertas) agrupadas por puntuaciones
-    # (las funciones le la lista n tienen puntuación n)
-    # Si el archivo está vacío o no tiene datos válidos, devuelve una lista vacía
-    # '''
-    if not os.path.exists(ruta) or os.stat(ruta).st_size == 0:
-        return []
-    
-    try:
-        with open(ruta, "r") as f:
-            data = json.load(f)
-    except json.JSONDecodeError:
-        return []   # En caso de que el JSON esté vacío o mal formado
-    
-    return data

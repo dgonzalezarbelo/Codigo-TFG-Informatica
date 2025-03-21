@@ -6,6 +6,8 @@ from metricas.inter_solapamiento import *
 from metricas.intra_solapamiento import *
 from metricas.sensibilidad import *
 from metricas.sesgo import *
+from metricas.equidad import *
+from metricas.perdidas import *
 
 # Función a la que llamar para hacer lo que quiera
 def main():
@@ -42,6 +44,21 @@ def main():
     # grafica_relacion_puntuacion_inter_solapamiento("experimentos/experimentos_n8/mejores_aleatorias_1-50_AND.json")
     # grafica_relacion_puntuacion_inter_solapamiento("experimentos/experimentos_n8/mejores_simuladas_1-50_AND.json")
 
-    grafica_sopalamiento_simuladas_vs_aleatorias()
+    # grafica_sopalamiento_simuladas_vs_aleatorias()
+
+    # print(sesgo_de_cliques(clique))
+
+    # grafica_equidad_simuladas_vs_aleatorias()
+
+    # print(intra_solapamiento(clique))
+    
+    # genera_aleatorias()
+    # obtener_mejores_aleatorias(100, 150)
+
+    prueba_metricas_funciones_aleatorias()
+
+    # f = [[3, 5], [1, 2, 3, 8, 9, 14]]
+    # print(perdidas(f))
+    # grafica_perdidas_simuladas_vs_aleatorias()
 
 main()

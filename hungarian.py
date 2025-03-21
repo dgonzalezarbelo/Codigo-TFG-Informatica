@@ -3,7 +3,7 @@
 
 # Algoritmo húngaro, para calcular el problema de asignación
 
-def matching(mat) :
+def matching(mat, devuelve_asignacion = False) :
     if len(mat) == 0 : return 0
     n = len(mat) + 1
     m = len(mat[0]) + 1
@@ -41,4 +41,8 @@ def matching(mat) :
             j1 = pre[j0]
             p[j0] = p[j1]
             j0 = j1
-    return -v[0]
+    if not devuelve_asignacion:
+        return -v[0]
+    else:
+        asignaciones = [(p[j], j) for j in range(1, m)]
+        return -v[0], asignaciones

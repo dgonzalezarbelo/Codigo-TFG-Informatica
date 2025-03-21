@@ -86,7 +86,7 @@ def sesgo_de_cliques(fnd):
         sesgos.append(len(restricciones))
     media = sum(sesgos) / len(sesgos)
     varianza = sum((s - media) ** 2 for s in sesgos) / len(sesgos)
-    return [max(sesgos) - min(sesgos), min(sesgos), media]
+    return [max(sesgos) - min(sesgos), min(sesgos), media, varianza]
 
 def grafica_sesgo(funciones):
     '''
@@ -94,26 +94,17 @@ def grafica_sesgo(funciones):
     y cada elemento es una lista de funciones con dicha puntuación
     '''
     por_punt = [[] for _ in range(len(funciones))]
-    xs, max_mins, mins, medias = [], [], [], []
+    xs, max_mins, mins, medias, varianzas = [], [], [], [], []
     for punt, lista in enumerate(funciones):
         debug(punt)
         for f in lista:
             xs.append(punt)
-            [max_min, min, media] = sesgo_de_cliques(f)
+            [max_min, min, media, varianza] = sesgo_de_cliques(f)
             max_mins.append(max_min)
             mins.append(min)
             medias.append(media)
+            varianzas.append(varianza)
     
-    fig = plt.figure(figsize = (8,5))
-    plt.plot(xs, medias, 'ro', alpha = 0.5)
-    # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
-    title = "Relación entre puntuación y sesgo medio"
-    plt.title(title)
-    # plt.legend()
-    plt.xlabel("Puntuación")
-    plt.ylabel("Sesgo medio")
-    # plt.savefig(os.path.join(ruta, "graficaAND.png"))
-    plt.show()
 
     fig = plt.figure(figsize = (8,5))
     plt.plot(xs, max_mins, 'ro', alpha = 0.5)
@@ -134,6 +125,28 @@ def grafica_sesgo(funciones):
     # plt.legend()
     plt.xlabel("Puntuación")
     plt.ylabel("Sesgo mínimo")
+    # plt.savefig(os.path.join(ruta, "graficaAND.png"))
+    plt.show()
+    
+    fig = plt.figure(figsize = (8,5))
+    plt.plot(xs, medias, 'ro', alpha = 0.5)
+    # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
+    title = "Relación entre puntuación y sesgo medio"
+    plt.title(title)
+    # plt.legend()
+    plt.xlabel("Puntuación")
+    plt.ylabel("Sesgo medio")
+    # plt.savefig(os.path.join(ruta, "graficaAND.png"))
+    plt.show()
+    
+    fig = plt.figure(figsize = (8,5))
+    plt.plot(xs, varianzas, 'ro', alpha = 0.5)
+    # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
+    title = "Relación entre puntuación y varianza de sesgo"
+    plt.title(title)
+    # plt.legend()
+    plt.xlabel("Puntuación")
+    plt.ylabel("Varianza de sesgo")
     # plt.savefig(os.path.join(ruta, "graficaAND.png"))
     plt.show()
 

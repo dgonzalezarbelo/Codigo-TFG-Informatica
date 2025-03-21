@@ -96,7 +96,7 @@ def genera_pseudoaleatoria_puntuacion(puntuacion):
     assert(m(fnd) == puntuacion)
     return fnd
 
-def poblacion_inicial(ini, fin, n):
+def poblacion_inicial_pseudoaleatoria(ini, fin, n):
     '''
     Función que devuelve una población inicial de tamaño n mezclando FNDs con puntuaciones
     en el rango [ini, fin] combinadas con la puerta recibida como argumento
@@ -211,7 +211,7 @@ def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
     poblaciones, mezcladas, parejas_formadas, incrementos = {}, {}, {}, {}
     for p in PUERTAS_HABILITADAS:
         if pob_inicial == None:
-            poblaciones[p] = poblacion_inicial(ini, fin, POPULATION_SIZE)
+            poblaciones[p] = poblacion_inicial_pseudoaleatoria(ini, fin, POPULATION_SIZE)
         else:
             random.shuffle(pob_inicial)
             poblaciones[p] = pob_inicial[:POPULATION_SIZE]
@@ -373,8 +373,25 @@ def grafica_perdidas(funciones):
     # plt.savefig(os.path.join(ruta, "graficaAND.png"))
     plt.show()
 
+def genera_aleatorias():
+    num_funciones = 10000
+    funciones = [[] for _ in range(M_CLIQUE + 1)]
+    for i in range(num_funciones):
+        if i > 0 and i % 1000 == 0:
+            debug(f"{i} funciones aleatorias generadas")
+        f = genera_funcion_aleatoria()
+        m_f = m(f)
+        funciones[m_f].append([f, 0])   # TODO Lo del 0 es una cutrada pero es que tengo todo con lo de las puertas
+    guardar_funciones("experimentos/experimentos_n8/aleatorias_temp.json", funciones)
+    almacena_fnds("experimentos/experimentos_n8/aleatorias_temp.json", "experimentos/experimentos_n8/almacen_aleatorias.json")
+
 def obtener_mejores_pseudoaleatorias(ini, fin):
-    genetico(ini, fin, nombre=f"mejores_pseudoaleatorias_{ini}-{fin}")
+    genetico(ini, fin, nombre=f"mejores_pseudoaleatorias_{ini}-{fin}", mutacion=True)
+
+def obtener_mejores_aleatorias(ini, fin):
+    pob_inicial = funciones_de_almacen_en_rango(ini, fin, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    genetico(ini, fin, pob_inicial, nombre=f"mejores_aleatorias_{ini}-{fin}", mutacion=True)
+
 
 def obtener_mejores_simuladas(ini, fin):
     pob_inicial = funciones_de_almacen_en_rango(ini, fin)
