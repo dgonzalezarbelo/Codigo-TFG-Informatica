@@ -55,10 +55,24 @@ def main():
     # genera_aleatorias()
     # obtener_mejores_aleatorias(100, 150)
 
-    prueba_metricas_funciones_aleatorias()
+    # prueba_metricas_funciones_aleatorias()
 
     # f = [[3, 5], [1, 2, 3, 8, 9, 14]]
     # print(perdidas(f))
     # grafica_perdidas_simuladas_vs_aleatorias()
+
+    # grafica_equidad_mejores(2500)
+    # grafica_intrasolapamiento_mejores(2500)
+    # grafica_perdidas_asignaciones_mejores(2500)
+    # grafica_perdidas_puntuacion_mejores(2500)
+    # grafica_sesgo_min_mejores(100)
+    # grafica_sesgo_medio_mejores(100)
+
+    grafica_variacion_equidad(100)
+    grafica_variacion_intrasolapamiento(100)
+    grafica_variacion_perdidas_asignaciones(100)
+    grafica_variacion_perdidas_puntuacion(100)
+    grafica_variacion_sesgo_min(100)
+    grafica_variacion_sesgo_medio(100)
 
 main()

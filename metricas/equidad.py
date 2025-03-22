@@ -46,3 +46,17 @@ def grafica_equidad_simuladas_vs_aleatorias():
     plt.xlabel("$\mu_x(f)$")
     plt.ylabel("Equidad")
     plt.show()
+
+def grafica_equidad_mejores(n_funciones):
+    simuladas = leer_top_funciones("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    pseudoaleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_pseudoaleatorias_100-150_AND.json", n_funciones)
+    aleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json", n_funciones)
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_comparaciones(dic, m, equidad, "Equidad")
+
+def grafica_variacion_equidad(n_funciones):
+    parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    grafica_variacion_medida(parejas, m, equidad, combAND_with_not, combOR, "Equidad")

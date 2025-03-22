@@ -88,6 +88,12 @@ def sesgo_de_cliques(fnd):
     varianza = sum((s - media) ** 2 for s in sesgos) / len(sesgos)
     return [max(sesgos) - min(sesgos), min(sesgos), media, varianza]
 
+def sesgo_min(f):
+    return sesgo_de_cliques(f)[1]
+
+def sesgo_medio(f):
+    return sesgo_de_cliques(f)[2]
+
 def grafica_sesgo(funciones):
     '''
     Funciones es una lista donde el índice es la puntuación
@@ -180,3 +186,31 @@ def compara_sesgo_aleatorias_con_simuladas(ini, fin, simuladas):
     plt.xlabel("$\mu_x(f)$")
     plt.ylabel("Sesgo")
     plt.show()
+    
+def grafica_sesgo_min_mejores(n_funciones):
+    simuladas = leer_top_funciones("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    pseudoaleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_pseudoaleatorias_100-150_AND.json", n_funciones)
+    aleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json", n_funciones)
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_comparaciones(dic, m, sesgo_min, "Sesgo mínimo")
+
+def grafica_sesgo_medio_mejores(n_funciones):
+    simuladas = leer_top_funciones("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    pseudoaleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_pseudoaleatorias_100-150_AND.json", n_funciones)
+    aleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json", n_funciones)
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_comparaciones(dic, m, sesgo_medio, "Sesgo medio")
+
+def grafica_variacion_sesgo_min(n_funciones):
+    parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    grafica_variacion_medida(parejas, m, sesgo_min, combAND_with_not, combOR, "Sesgo mínimo")
+
+def grafica_variacion_sesgo_medio(n_funciones):
+    parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    grafica_variacion_medida(parejas, m, sesgo_medio, combAND_with_not, combOR, "Sesgo medio")

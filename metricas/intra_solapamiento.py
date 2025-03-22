@@ -45,3 +45,17 @@ def grafica_sopalamiento_simuladas_vs_aleatorias():
     plt.xlabel("$\mu_x(f)$")
     plt.ylabel("Solapamiento promedio")
     plt.show()
+
+def grafica_intrasolapamiento_mejores(n_funciones):
+    simuladas = leer_top_funciones("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    pseudoaleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_pseudoaleatorias_100-150_AND.json", n_funciones)
+    aleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json", n_funciones)
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_comparaciones(dic, m, intra_solapamiento, "Intra-solapamiento")
+
+def grafica_variacion_intrasolapamiento(n_funciones):
+    parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    grafica_variacion_medida(parejas, m, intra_solapamiento, combAND_with_not, combOR, "Intra-solapamiento")

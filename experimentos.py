@@ -195,6 +195,24 @@ def leer_json_parejas(ruta):
     
     return data
 
+def leer_top_parejas(ruta, n_parejas):
+    '''Función para leer las mejores n_parejas parejas obtenidas con algoritmo genético de parejas'''
+    parejas = leer_json_parejas(ruta)
+    ret = []
+    for i in range(min(n_parejas, len(parejas))):
+        ret.append([parejas[i][0][0], parejas[i][1][0]])
+    return ret
+
+def leer_top_funciones(ruta, n_funciones):
+    '''Función para leer las mejores n_funciones funciones obtenidas con algoritmo genético de parejas'''
+    datos = leer_json_parejas(ruta)
+    funciones = []
+    for i in range(0, min(n_funciones, len(datos)) // 2):
+        par = datos[i]
+        funciones.append(par[0][0])
+        funciones.append(par[1][0])
+    return funciones
+
 def funciones_de_almacen_en_rango(ini, fin, ruta_almacen = "experimentos/experimentos_n8/almacen_fnds.json"):
     almacen = leer_json_funciones(ruta_almacen)
     funciones = []
@@ -281,3 +299,113 @@ def grafica_puntuaciones_por_puertas(funciones):
     # plt.savefig(os.path.join(ruta, "graficaAND.png"))
     plt.show()
     # plt.close()
+
+def grafica_comparaciones(conjuntos_de_funciones, metrica, medida, nombre):
+    '''
+    Esta función sirve para hacer gráficas en las que se comparen los valores
+    de cierta medida para varios grupos de funciones.
+    Principalmente se usará para comparar funciones simuladas, aleatorias y pseudoaleatorias.
+    Argumentos:
+        conjuntos_de_funciones: Diccionario donde la clave es el tipo de función (simulada, aleatoria, ...)
+                                y la clave es una lista de listas (índice = puntuación de las funciones)
+    '''
+    # fig = plt.figure(figsize = (8,5))
+    fig, ax = plt.subplots(figsize=(8, 6))
+    i_color = 0
+    colores = ['ro', 'bo', 'go', 'yo']
+    title = f"Comparación de puntuación y {nombre}"
+    maximos, minimos = {}, {}
+
+    # Recogemos los datos
+    texto_info = ""
+    for tipo, funciones in conjuntos_de_funciones.items():
+        maximos[tipo], minimos[tipo] = float('-inf'), float('inf')
+        xs, ys = [], []
+        for f in funciones:
+            xs.append(metrica(f))
+            y = medida(f)
+            ys.append(y)
+            maximos[tipo] = max(maximos[tipo], y)
+            minimos[tipo] = min(minimos[tipo], y)
+            if len(xs) % 100 == 0:
+                print(f"{len(xs)} puntos de funciones {tipo} calculados")
+        # plt.plot(xs, ys, colores[i_color], alpha = 0.5, label = f"Funciones {tipo}")
+        ax.plot(xs, ys, colores[i_color], alpha=0.5, label=f"Funciones {tipo}")
+        i_color += 1
+
+    # Mostramos mínimos y máximos debajo de la gráfica
+    for tipo in conjuntos_de_funciones.keys():
+        texto_info += f"{len(conjuntos_de_funciones[tipo])} funciones {tipo}: Máx = {maximos[tipo]:.4f}, Mín = {minimos[tipo]:.4f}\n"
+    
+    plt.title(title)
+    plt.legend()
+    plt.xlabel("$\mu_x(f)$")
+    plt.ylabel(nombre)
+    
+    # Ajustamos márgenes para dejar espacio para el texto
+    plt.subplots_adjust(bottom=0.25)
+
+    # Ajustamos la posición del texto justo debajo de la gráfica
+    ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
+
+    plt.show()
+
+def grafica_variacion_medida(parejas, metrica, medida, combAND, combOR, nombre):
+    '''
+    Esta función sirve para hacer gráficas en las que se comparen los valores
+    de cierta medida para parejas de funciones antes y después de pasar por una puerta AND o OR.
+    '''
+    # fig = plt.figure(figsize = (8,5))
+    fig, ax = plt.subplots(figsize=(8, 6))
+    colores = ['ro', 'bo', 'go', 'yo']
+    title = f"Comparación de puntuación y variación de {nombre}"
+
+    min_AND, max_AND, min_OR, max_OR = float('inf'), float('-inf'), float('inf'), float('-inf')
+
+    # Recogemos los datos
+    texto_info = ""
+    xAND, yAND = [], []
+    xOR, yOR = [], []
+    for [f, g] in parejas:
+        # maximos[tipo], minimos[tipo] = float('-inf'), float('inf')
+        m_f, m_g = metrica(f), metrica(g)
+        med_f, med_g = medida(f), medida(g)
+        xAND.append(m_f); xAND.append(m_g)
+        xOR.append(m_f); xOR.append(m_g)
+        
+        conj = combAND(f, g)
+        disy = combOR(f, g)
+        med_conj, med_disy = medida(conj), medida(disy)
+        yAND.append(med_conj - med_f); yAND.append(med_conj - med_g)
+        yOR.append(med_disy - med_f); yOR.append(med_disy - med_g)
+
+        min_AND = min(min_AND, med_conj - med_f, med_conj - med_g)
+        max_AND = max(max_AND, med_conj - med_f, med_conj - med_g)
+        min_OR = min(min_OR, med_disy - med_f, med_disy - med_g)
+        max_OR = max(max_OR, med_disy - med_f, med_disy - med_g)
+
+        if (len(xAND) // 2) % 100 == 0:
+            print(f"{len(xAND) // 2} puntos con cada puerta calculados")
+    
+    # plt.plot(xs, ys, colores[i_color], alpha = 0.5, label = f"Funciones {tipo}")
+    ax.plot(xAND, yAND, colores[0], alpha=0.5, label=f"Variación con AND")
+    ax.plot(xOR, yOR, colores[1], alpha=0.5, label=f"Variación con OR")
+
+    # Mostramos mínimos y máximos debajo de la gráfica
+    texto_info += f"{len(parejas)} parejas\n"
+    texto_info += f"Variación AND: Máx = {max_AND:.4f}, Mín = {min_AND:.4f}\n"
+    texto_info += f"Variación OR: Máx = {max_OR:.4f}, Mín = {min_OR:.4f}\n"
+    
+    plt.title(title)
+    plt.legend()
+    plt.xlabel("$\mu_x$")
+    plt.ylabel(f"Variacón de {nombre}")
+    
+    # Ajustamos márgenes para dejar espacio para el texto
+    plt.subplots_adjust(bottom=0.25)
+
+    # Ajustamos la posición del texto justo debajo de la gráfica
+    ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
+    plt.savefig(f"metricas/graficas/variacion_{nombre}")
+    # plt.show()
+    plt.close()

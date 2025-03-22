@@ -18,6 +18,12 @@ def perdidas(f):
             malas_asignaciones += 1
     return [malas_asignaciones, punt_ideal - m_f]
 
+def perdidas_asignaciones(f):
+    return perdidas(f)[0]
+
+def perdidas_puntuacion(f):
+    return perdidas(f)[1]
+
 def grafica_perdidas_simuladas_vs_aleatorias():
     max_funciones = 1000
     almacen = leer_fnds_por_puntuacion("experimentos/experimentos_n8/almacen_fnds.json")
@@ -66,3 +72,31 @@ def grafica_perdidas_simuladas_vs_aleatorias():
     plt.xlabel("$\mu_x(f)$")
     plt.ylabel("Pérdidas")
     plt.show()
+
+def grafica_perdidas_asignaciones_mejores(n_funciones):
+    simuladas = leer_top_funciones("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    pseudoaleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_pseudoaleatorias_100-150_AND.json", n_funciones)
+    aleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json", n_funciones)
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_comparaciones(dic, m, perdidas_asignaciones, "Pérdidas en asignaciones")
+
+def grafica_perdidas_puntuacion_mejores(n_funciones):
+    simuladas = leer_top_funciones("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    pseudoaleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_pseudoaleatorias_100-150_AND.json", n_funciones)
+    aleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json", n_funciones)
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_comparaciones(dic, m, perdidas_puntuacion, "Pérdidas de puntuación")
+
+def grafica_variacion_perdidas_asignaciones(n_funciones):
+    parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    grafica_variacion_medida(parejas, m, perdidas_asignaciones, combAND_with_not, combOR, "Pérdidas en asignaciones")
+
+def grafica_variacion_perdidas_puntuacion(n_funciones):
+    parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    grafica_variacion_medida(parejas, m, perdidas_puntuacion, combAND_with_not, combOR, "Pérdidas de puntuacion")
