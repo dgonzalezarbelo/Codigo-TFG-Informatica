@@ -68,7 +68,7 @@ def main():
     # grafica_sesgo_min_mejores(100)
     # grafica_sesgo_medio_mejores(100)
 
-    grafica_variacion_equidad(100)
+    # grafica_variacion_equidad(100)
     grafica_variacion_intrasolapamiento(100)
     grafica_variacion_perdidas_asignaciones(100)
     grafica_variacion_perdidas_puntuacion(100)
