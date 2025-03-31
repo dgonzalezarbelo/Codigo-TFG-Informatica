@@ -18,7 +18,9 @@ def grafica_relacion_puntuacion_inter_solapamiento(ruta):
     '''
     data = leer_json_parejas(ruta)
     xs, ys = [], []
-    for info in data:
+    for i, info in enumerate(data):
+        if i % 100 == 0:
+            debug(i)
         [[f, m_f], [g, m_g], punt] = info
         xs.append(punt)
         ys.append(inter_solapamiento(f, g))

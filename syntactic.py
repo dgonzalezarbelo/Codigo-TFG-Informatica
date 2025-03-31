@@ -19,6 +19,7 @@ CLAUSULAS = math.comb(N, K)
 M_CLIQUE = CLAUSULAS * A_CLIQUE # Puntuación de la función Cliqué
 subsets = []
 idx = [[0 for i in range(N+1)] for j in range(N+1)]
+inv_idx = [(0, 0) for _ in range(A+1)]
 
 # Genera los subconjuntnso de tamaño sz a partir de la variable ini
 def generate_subset(n, ini, sz, acc) : 
@@ -40,6 +41,7 @@ def generate_fun_clique(subsets) :
     for i in range(1,N+1) :
         for j in range(i+1, N+1) :
             idx[i][j] = cnt
+            inv_idx[cnt] = (i, j)
             cnt += 1
     for s in subsets : 
         f = []

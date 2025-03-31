@@ -8,6 +8,7 @@ from metricas.sensibilidad import *
 from metricas.sesgo import *
 from metricas.equidad import *
 from metricas.perdidas import *
+from metricas.clausulas_perfectas import *
 
 # Función a la que llamar para hacer lo que quiera
 def main():
@@ -41,8 +42,9 @@ def main():
     
     # grafica_sopalamiento_simuladas_vs_aleatorias()
 
-    # grafica_relacion_puntuacion_inter_solapamiento("experimentos/experimentos_n8/mejores_aleatorias_1-50_AND.json")
-    # grafica_relacion_puntuacion_inter_solapamiento("experimentos/experimentos_n8/mejores_simuladas_1-50_AND.json")
+    # grafica_relacion_puntuacion_inter_solapamiento("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json")
+    # grafica_relacion_puntuacion_inter_solapamiento("experimentos/experimentos_n8/mejores_pseudoaleatorias_100-150_AND.json")
+    # grafica_relacion_puntuacion_inter_solapamiento("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json")
 
     # grafica_sopalamiento_simuladas_vs_aleatorias()
 
@@ -67,12 +69,13 @@ def main():
     # grafica_perdidas_puntuacion_mejores(2500)
     # grafica_sesgo_min_mejores(100)
     # grafica_sesgo_medio_mejores(100)
+    grafica_clausulas_perfectas_mejores(2500)
 
-    grafica_variacion_equidad(100)
-    grafica_variacion_intrasolapamiento(100)
-    grafica_variacion_perdidas_asignaciones(100)
-    grafica_variacion_perdidas_puntuacion(100)
-    grafica_variacion_sesgo_min(100)
-    grafica_variacion_sesgo_medio(100)
+    # grafica_variacion_equidad(100)
+    # grafica_variacion_intrasolapamiento(100)
+    # grafica_variacion_perdidas_asignaciones(100)
+    # grafica_variacion_perdidas_puntuacion(100)
+    # grafica_variacion_sesgo_min(100)
+    # grafica_variacion_sesgo_medio(100)
 
 main()
