@@ -350,6 +350,37 @@ def grafica_comparaciones(conjuntos_de_funciones, metrica, medida, nombre):
 
     plt.show()
 
+def grafica_histograma(conjuntos_de_funciones, medida, nombre):
+    '''
+    Genera un histograma para comparar la distribución de una medida en distintos conjuntos de funciones.
+    
+    Argumentos:
+        conjuntos_de_funciones: Diccionario donde la clave es el tipo de función (simulada, aleatoria, ...)
+                                y el valor es una lista de listas de funciones.
+        medida: Función que calcula la medida de interés para cada función.
+        nombre: Nombre de la medida que se mostrará en los ejes y título.
+    '''
+    fig, ax = plt.subplots(figsize=(8, 6))
+    colores = ['r', 'b', 'g', 'y', 'm', 'c']  # Colores para distinguir cada conjunto
+    i_color = 0
+    
+    # Determinar el rango de valores de la medida
+    min_valor, max_valor = 0, 4500 # El maximo para n = 8 es 4480
+    bins = np.arange(min_valor // 100 * 100, (max_valor // 100 + 2) * 100, 100)
+    
+    # Recolectamos los valores de la medida para cada conjunto de funciones
+    for tipo, funciones in conjuntos_de_funciones.items():
+        valores_medida = [medida(f) for f in funciones]
+        ax.hist(valores_medida, bins=bins, alpha=0.5, color=colores[i_color % len(colores)], 
+                label=f"Funciones {tipo}", edgecolor='black', align='mid')
+        i_color += 1
+    
+    plt.title(f"Distribución de {nombre}")
+    plt.xlabel(nombre)
+    plt.ylabel("Número de funciones")
+    plt.legend()
+    plt.show()
+
 def grafica_variacion_medida(parejas, metrica, medida, combAND, combOR, nombre):
     '''
     Esta función sirve para hacer gráficas en las que se comparen los valores

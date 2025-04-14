@@ -86,13 +86,39 @@ def sesgo_de_cliques(fnd):
         sesgos.append(len(restricciones))
     media = sum(sesgos) / len(sesgos)
     varianza = sum((s - media) ** 2 for s in sesgos) / len(sesgos)
-    return [max(sesgos) - min(sesgos), min(sesgos), media, varianza]
+    return [max(sesgos) - min(sesgos), min(sesgos), media, varianza, sum(sesgos)]
 
 def sesgo_min(f):
     return sesgo_de_cliques(f)[1]
 
 def sesgo_medio(f):
     return sesgo_de_cliques(f)[2]
+
+def grados_libertad(f):
+    sesgos = []
+    restricciones = set()
+    l_restricciones = []
+    for s in subsets:
+        aristas = []
+        for i in range(len(s)):
+            for j in range(i + 1, len(s)):
+                v1, v2 = s[i], s[j]
+                aristas.append(idx[v1][v2])
+        
+        # Probamos todos los estados posibles de las A_CLIQUE aristas
+        valores = list(product([0, 1], repeat=A_CLIQUE))
+        for v in valores:
+            asignaciones = {}
+            for i in range(A_CLIQUE):
+                asignaciones[aristas[i]] = v[i]
+            restricciones.add(lista_a_tupla(restringe_fnd(f, asignaciones)))
+            l_restricciones.append(lista_a_tupla(restringe_fnd(f, asignaciones)))
+        # debug(f"s -> {s}")
+        # debug(f"nº restricciones -> {len(restricciones)}")
+        sesgos.append(len(restricciones))
+    print(len(l_restricciones))
+    print(len(set(l_restricciones)))
+    return len(restricciones)
 
 def grafica_sesgo(funciones):
     '''
@@ -206,6 +232,16 @@ def grafica_sesgo_medio_mejores(n_funciones):
     dic["pseudoaleatorias"] = pseudoaleatorias
     dic["aleatorias"] = aleatorias
     grafica_comparaciones(dic, m, sesgo_medio, "Sesgo medio")
+
+def grafica_grados_libertad_mejores(n_funciones):
+    simuladas = leer_top_funciones("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
+    pseudoaleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_pseudoaleatorias_100-150_AND.json", n_funciones)
+    aleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json", n_funciones)
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_histograma(dic, grados_libertad, "Grados de libertad")
 
 def grafica_variacion_sesgo_min(n_funciones):
     parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)

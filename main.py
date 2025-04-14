@@ -69,7 +69,7 @@ def main():
     # grafica_perdidas_puntuacion_mejores(2500)
     # grafica_sesgo_min_mejores(100)
     # grafica_sesgo_medio_mejores(100)
-    grafica_clausulas_perfectas_mejores(2500)
+    # grafica_clausulas_perfectas_mejores(2500)
 
     # grafica_variacion_equidad(100)
     # grafica_variacion_intrasolapamiento(100)
@@ -77,5 +77,27 @@ def main():
     # grafica_variacion_perdidas_puntuacion(100)
     # grafica_variacion_sesgo_min(100)
     # grafica_variacion_sesgo_medio(100)
+    
+    # grafica_grados_libertad_mejores(1000)
+
+    # print(intra_solapamiento(clique))
+    # print(formula_solapamiento_clique())
+
+    # print(sesgo_medio(clique))
+    # print(grados_libertad(clique))
+    # print(sesgo_medio([[3]]))
+    # print(grados_libertad([[3]]))
+    # print(1 + (K*(K-1))/(N*(N-1)))
+    # print(f"2^({K} sobre 2) = {2**math.comb(K, 2)}")
+    # lista = [((-1)**(i % 2)) * (math.comb(K, i) * 2**(math.comb(K,2) - math.comb(i, 2))) for i in range(2*K - N,K+1)]
+    # print(f"Lista: {lista}")
+    # print("heyy esas haciendo pollo frito?")
+    # print(f"Sumatorio = {sum(lista)}")
+
+    # simulate_circuit_with_not()
+
+    f = [[1,3],[3,4,5],[1,2,3]]
+    print(f)
+    print(reduce(f))
 
 main()

@@ -90,6 +90,21 @@ def is_prefix(f, g) :
     if len(f) > len(g) : return False
     else : return f == g[:len(f)]
 
+# Comprueba si los literales de f son un subconjunto de los de g (f absorbe a g)
+def absorbs(f, g):
+    # Precondición: los literales de f y g vienen ordenados
+    if len(f) > len(g):
+        return False
+    i = j = 0
+    while i < len(f) and j < len(g):
+        if f[i] == g[j]:
+            i += 1
+        elif f[i] > g[j]:
+            j += 1
+        else:
+            return False
+    return i == len(f)
+
 # Reduce f. CUIDADO CON LOS NOT
 def reduce(f, k = (K * (K-1) // 2), use_not = True) :
     l = len(f)
@@ -114,7 +129,8 @@ def reduce(f, k = (K * (K-1) // 2), use_not = True) :
         if mark[i] : continue
         # Si la cláusula i es prefijo de la j, al combinarlas con OR se absorbe la j, así que no nos sirve
         for j in range(i+1, l) :
-            if is_prefix(f[i], f[j]) : mark[j] = True
+            # if is_prefix(f[i], f[j]) : mark[j] = True
+            if absorbs(f[i], f[j]) : mark[j] = True
         res.append(f[i])
     return res  
 
@@ -348,11 +364,10 @@ def simulate_circuit_with_not() :
     CLAVE_NEG = lambda f: -CLAVE(f)
     or_iter = 15
     and_iter = 15
-    # max_size = 2 * CLAUSULAS
-    max_size = 1500    # TODO Esto es para probar
+    max_size = 150
     limit = 300
-    iter = 300
-    # iter = 50
+    # iter = 300
+    iter = 50
     # iter = 10
     xOR = []; xAND = []
     yOR = []; yAND = []
@@ -418,18 +433,20 @@ def simulate_circuit_with_not() :
     
     guardar_simulacion(None, fnds, iter, xAND, yAND, xOR, yOR)
     
-    print("Incremento máximo:", S[0][1])
-    print(f"Tiempo de ejecución: {tiempo}")
-    fig = plt.figure(figsize = (8,5))
-    #plt.xlim([0,420])
-    plt.plot(xAND, yAND, 'ro', alpha = 0.5, label = "Incremento con AND")
-    plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
-    title = "Simulación tras " + str(iter) + " iteraciones"
-    plt.title(title)
-    plt.legend()
-    plt.xlabel("$\mu_x(f)$")
-    plt.ylabel("$\mu_x(f)$")
-    plt.show()
+    mostrar_grafica = False
+    if mostrar_grafica:
+        print("Incremento máximo:", S[0][1])
+        print(f"Tiempo de ejecución: {tiempo}")
+        fig = plt.figure(figsize = (8,5))
+        #plt.xlim([0,420])
+        plt.plot(xAND, yAND, 'ro', alpha = 0.5, label = "Incremento con AND")
+        plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
+        title = "Simulación tras " + str(iter) + " iteraciones"
+        plt.title(title)
+        plt.legend()
+        plt.xlabel("$\mu_x(f)$")
+        plt.ylabel("$\mu_x(f)$")
+        plt.show()
     
 # Compara funciones endogámicas de poca puntuación
 def compare_low_end_fun() :

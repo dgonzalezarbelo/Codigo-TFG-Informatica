@@ -11,6 +11,10 @@ def intra_solapamiento(f):
             sum += common_literals(f[i], f[j]) / max(len(f[i]), len(f[j]))
     return sum / (n * (n - 1))
 
+def formula_solapamiento_clique():
+    sumatorio = sum([math.comb(x, 2) * math.comb(K, x) * math.comb(N - K, K - x) for x in range(2, K + 1)])
+    return (sumatorio - math.comb(K, 2)) / (2 * (math.comb(N, K) - 1) * math.comb(K, 2))
+
 def grafica_sopalamiento_simuladas_vs_aleatorias():
     max_funciones = 10000
     almacen = leer_fnds_por_puntuacion("experimentos/experimentos_n8/almacen_fnds.json")
