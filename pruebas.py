@@ -7,6 +7,7 @@ from metricas.sensibilidad import *
 from metricas.sesgo import *
 from metricas.equidad import *
 from metricas.perdidas import *
+from pyeda.inter import *
 
 def prueba_genetico():
     funciones = leer_fnds_por_puntuacion('experimentos/experimentos_n8/Simulacion_300_iteraciones/funciones_fnd.json')
@@ -118,3 +119,13 @@ def prueba_metricas_funciones_aleatorias():
     print(f"\tSolapamiento: {intra_solapamiento(h2)}")
     print(f"\tEquidad: {equidad(h2)}")
     print(f"\tPérdidas: {perdidas(h2)}")
+
+def pruebas_reduccion():
+    start = time.perf_counter()
+    print(reduce([[1,2,3], [-1,2,3], [1,2,-3], [-1,2,-3]]))
+    end = time.perf_counter()
+    print(f"Tiempo de ejecución de reduce: {end - start:.4f} segundos")
+    start = time.perf_counter()
+    print(reduce_pyeda([[1,2,3], [-1,2,3], [1,2,-3], [-1,2,-3]]))
+    end = time.perf_counter()
+    print(f"Tiempo de ejecución de reduce_pyeda: {end - start:.4f} segundos")

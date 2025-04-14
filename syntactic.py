@@ -10,6 +10,7 @@ from collections import deque
 from collections import defaultdict
 import time
 from experimentos import *
+from pyeda.inter import *
 
 N = 8 # Vértices
 K = N // 2 # Tamaño del clique
@@ -113,7 +114,7 @@ def reduce(f, k = (K * (K-1) // 2), use_not = True) :
         f[i].sort()
     
     # Ordenamos las cláusulas para luego hacer fácilmente la absorción de cláusulas inútiles
-    f.sort()
+    f.sort(key=len)
 
     # Quitar elementos que no aportan informacion
     res = []
@@ -133,6 +134,51 @@ def reduce(f, k = (K * (K-1) // 2), use_not = True) :
             if absorbs(f[i], f[j]) : mark[j] = True
         res.append(f[i])
     return res  
+
+def fnd_to_pyeda(fnd):
+    # Obtener el conjunto de variables necesarias (sin signo)
+    vars_needed = {abs(lit) for clause in fnd for lit in clause}
+    
+    # Crear las variables con exprvar
+    variables = {i: exprvar(f"x{i}") for i in vars_needed}
+
+    # Convertimos cada cláusula
+    pyeda_clauses = []
+    for clause in fnd:
+        literals = []
+        for lit in clause:
+            var = variables[abs(lit)]
+            literals.append(~var if lit < 0 else var)
+        pyeda_clauses.append(And(*literals))  # Conjunción dentro de la cláusula
+
+    # Disyunción total de cláusulas
+    return Or(*pyeda_clauses)
+
+def pyeda_to_fnd(expr):
+    dnf_expr = expr.to_dnf()
+    clauses = []
+
+    for cube in dnf_expr.cover:
+        clause = []
+        for lit in cube:
+            var_name = str(lit).lstrip('~')  # 'x3' o '~x3' → 'x3'
+            var_index = int(var_name[1:])    # 'x3' → 3
+            if str(lit).startswith('~'):
+                clause.append(-var_index)
+            else:
+                clause.append(var_index)
+        clause.sort()
+        clauses.append(clause)
+
+    return clauses
+
+def reduce_pyeda(f):
+    fp = fnd_to_pyeda(f)
+    try:
+        fpr = espresso_exprs(fp.to_dnf())[0]
+    except ValueError:  # Sale error cuando la función es idénticamente cierta o nula FIXME (creo)
+        return []
+    return pyeda_to_fnd(fpr)
 
 # Calcula f and g
 # Junta todos los pares de f y g 
@@ -214,7 +260,8 @@ def combAND_with_not(f, g) :
                 ok = False
                 break
         if ok : ret.append(i)
-    return reduce(ret)
+    # return reduce(ret)
+    return reduce_pyeda(ret)
 
 # Compara funciones aleatorias
 def compare_rand_fun() :
@@ -307,7 +354,8 @@ def endogamic_fun(n, m, reverse = False) :
 # OR de dos funciones
 def combOR(f, g) :
     res = f + g
-    return reduce(res)
+    # return reduce(res)
+    return reduce_pyeda(res)
 
 # Simula el circuito
 def simulate_circuit() :

@@ -9,6 +9,7 @@ from metricas.sesgo import *
 from metricas.equidad import *
 from metricas.perdidas import *
 from metricas.clausulas_perfectas import *
+import time
 
 # Función a la que llamar para hacer lo que quiera
 def main():
@@ -94,10 +95,15 @@ def main():
     # print("heyy esas haciendo pollo frito?")
     # print(f"Sumatorio = {sum(lista)}")
 
-    # simulate_circuit_with_not()
+    simulate_circuit_with_not()
 
-    f = [[1,3],[3,4,5],[1,2,3]]
-    print(f)
-    print(reduce(f))
+    # f = [[1,3],[3,4,5],[1,2,3]]
+    # print(f)
+    # print(reduce(f))
+
+    # reducir_almacen(reduce, m)
+    # reducir_almacen(reduce, ruta_almacen="experimentos/experimentos_n8/almacen_fnds copy.json")
+
+    # pruebas_reduccion()
 
 main()

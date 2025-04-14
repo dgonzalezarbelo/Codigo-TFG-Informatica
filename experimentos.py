@@ -269,6 +269,24 @@ def filtrar_almacen_por_longitud(ruta_almacen="experimentos/experimentos_n8/alma
         pass
     guardar_funciones(ruta_almacen, nuevo_almacen)
 
+def reducir_almacen(reduce, m, ruta_almacen="experimentos/experimentos_n8/almacen_fnds.json"):
+    almacen = leer_json_funciones(ruta_almacen)
+    nuevo_almacen = [[] for _ in range(len(almacen))]
+    count = 0
+    for punt in range(len(almacen)):
+        for [fnd, puertas] in almacen[punt]:
+            l = len(fnd)
+            fnd = reduce(fnd)
+            new_punt = m(fnd)
+            if len(fnd) < l or new_punt != punt:
+                count += 1
+            nuevo_almacen[new_punt].append([fnd, puertas])
+    # Borramos el contenido del archivo por ahora
+    with open(ruta_almacen, "w") as f:
+        pass
+    guardar_funciones(ruta_almacen, nuevo_almacen)
+    print(f"Había {count} funciones sin reducir")
+
 def grafica_puntuaciones_por_puertas(funciones):
     '''
     Función para graficar la puntuación máxima obtenida por número de puertas
