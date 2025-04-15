@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 from debug import *
+import random
 
 def guardar_funciones(ruta, funciones):
     '''
@@ -214,11 +215,18 @@ def leer_top_funciones(ruta, n_funciones):
     return funciones
 
 def funciones_de_almacen_en_rango(ini, fin, ruta_almacen = "experimentos/experimentos_n8/almacen_fnds.json"):
-    almacen = leer_json_funciones(ruta_almacen)
+    almacen = leer_fnds_por_puntuacion(ruta_almacen)
     funciones = []
     for punt in range(ini, fin):
         funciones += almacen[punt]
     return funciones
+
+def poblacion_en_rango(ini, fin, n_funciones, ruta_almacen = "experimentos/experimentos_n8/almacen_fnds.json"):
+    todas = funciones_de_almacen_en_rango(ini, fin, ruta_almacen)
+    ret = []
+    for _ in range(n_funciones):
+        ret.append(random.choice(todas))
+    return ret
 
 def almacena_fnds(ruta_nuevas, ruta_almacen):
     '''
@@ -448,7 +456,7 @@ def grafica_variacion_medida(parejas, metrica, medida, combAND, combOR, nombre):
     plt.title(title)
     plt.legend()
     plt.xlabel("$\mu_x$")
-    plt.ylabel(f"Variacón de {nombre}")
+    plt.ylabel(f"Variación de {nombre}")
     
     # Ajustamos márgenes para dejar espacio para el texto
     plt.subplots_adjust(bottom=0.25)

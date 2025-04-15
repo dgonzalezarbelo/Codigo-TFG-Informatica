@@ -95,30 +95,31 @@ def sesgo_medio(f):
     return sesgo_de_cliques(f)[2]
 
 def grados_libertad(f):
-    sesgos = []
-    restricciones = set()
-    l_restricciones = []
-    for s in subsets:
-        aristas = []
-        for i in range(len(s)):
-            for j in range(i + 1, len(s)):
-                v1, v2 = s[i], s[j]
-                aristas.append(idx[v1][v2])
+    # sesgos = []
+    # restricciones = set()
+    # l_restricciones = []
+    # for s in subsets:
+    #     aristas = []
+    #     for i in range(len(s)):
+    #         for j in range(i + 1, len(s)):
+    #             v1, v2 = s[i], s[j]
+    #             aristas.append(idx[v1][v2])
         
-        # Probamos todos los estados posibles de las A_CLIQUE aristas
-        valores = list(product([0, 1], repeat=A_CLIQUE))
-        for v in valores:
-            asignaciones = {}
-            for i in range(A_CLIQUE):
-                asignaciones[aristas[i]] = v[i]
-            restricciones.add(lista_a_tupla(restringe_fnd(f, asignaciones)))
-            l_restricciones.append(lista_a_tupla(restringe_fnd(f, asignaciones)))
-        # debug(f"s -> {s}")
-        # debug(f"nº restricciones -> {len(restricciones)}")
-        sesgos.append(len(restricciones))
-    print(len(l_restricciones))
-    print(len(set(l_restricciones)))
-    return len(restricciones)
+    #     # Probamos todos los estados posibles de las A_CLIQUE aristas
+    #     valores = list(product([0, 1], repeat=A_CLIQUE))
+    #     for v in valores:
+    #         asignaciones = {}
+    #         for i in range(A_CLIQUE):
+    #             asignaciones[aristas[i]] = v[i]
+    #         restricciones.add(lista_a_tupla(restringe_fnd(f, asignaciones)))
+    #         l_restricciones.append(lista_a_tupla(restringe_fnd(f, asignaciones)))
+    #     # debug(f"s -> {s}")
+    #     # debug(f"nº restricciones -> {len(restricciones)}")
+    #     sesgos.append(len(restricciones))
+    # print(len(l_restricciones))
+    # print(len(set(l_restricciones)))
+    # return len(restricciones)
+    return sesgo_medio(f)
 
 def grafica_sesgo(funciones):
     '''
@@ -250,3 +251,15 @@ def grafica_variacion_sesgo_min(n_funciones):
 def grafica_variacion_sesgo_medio(n_funciones):
     parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
     grafica_variacion_medida(parejas, m, sesgo_medio, combAND_with_not, combOR, "Sesgo medio")
+
+def compara_grados_libertad():
+    n_funciones = 1000
+    ini, fin = 1, 250
+    simuladas = poblacion_en_rango(ini, fin, n_funciones)
+    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
+    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_comparaciones(dic, m, grados_libertad, "Grados de libertad")

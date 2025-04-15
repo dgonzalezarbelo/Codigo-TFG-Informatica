@@ -178,7 +178,11 @@ def reduce_pyeda(f):
         fpr = espresso_exprs(fp.to_dnf())[0]
     except ValueError:  # Sale error cuando la función es idénticamente cierta o nula FIXME (creo)
         return []
-    return pyeda_to_fnd(fpr)
+    try:
+        ret = pyeda_to_fnd(fpr)
+        return ret
+    except ValueError:
+        return []
 
 # Calcula f and g
 # Junta todos los pares de f y g 
@@ -414,8 +418,8 @@ def simulate_circuit_with_not() :
     and_iter = 15
     max_size = 150
     limit = 300
-    # iter = 300
-    iter = 50
+    iter = 300
+    # iter = 50
     # iter = 10
     xOR = []; xAND = []
     yOR = []; yAND = []
