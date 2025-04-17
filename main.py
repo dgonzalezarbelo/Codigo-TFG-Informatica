@@ -93,7 +93,6 @@ def main():
     # print(f"2^({K} sobre 2) = {2**math.comb(K, 2)}")
     # lista = [((-1)**(i % 2)) * (math.comb(K, i) * 2**(math.comb(K,2) - math.comb(i, 2))) for i in range(2*K - N,K+1)]
     # print(f"Lista: {lista}")
-    # print("heyy esas haciendo pollo frito?")
     # print(f"Sumatorio = {sum(lista)}")
 
     # simulate_circuit_with_not()
@@ -113,13 +112,22 @@ def main():
     # almacena_fnds("experimentos/2025-04-15_18-11-26/funciones_fnd.json", "experimentos/experimentos_n8/almacen_fnds.json")
 
     # genera_aleatorias()
-    # compara_grados_libertad()
     # compara_solapamiento()
     # compara_homogeneidad()
+    # compara_grados_libertad()
 
-    histograma_grados_libertad()
+    # histograma_grados_libertad()
 
     # genera_dataset_knn()
     # knn()
+
+    # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Solapamiento/datos_Solapamiento.csv")
+    # generar_grafica_desde_diccionario(dic)
+    # generar_histograma_desde_diccionario(dic, "Grados de libertad", 64)
+    # matriz_confusion_umbral_solapamiento(dic)
+
+    # variacion_solapamiento()
+    # variacion_homogeneidad()
+    variacion_grados_libertad()
 
 main()

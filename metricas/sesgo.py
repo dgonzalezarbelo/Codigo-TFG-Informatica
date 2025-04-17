@@ -2,6 +2,7 @@ from syntactic import *
 from itertools import product
 from debug import debug
 from genetic import *
+from experimentos import *
 
 def generar_listas_binarias(n):
     return [list(p) for p in product([0, 1], repeat=n)]
@@ -253,7 +254,7 @@ def grafica_variacion_sesgo_medio(n_funciones):
     grafica_variacion_medida(parejas, m, sesgo_medio, combAND_with_not, combOR, "Sesgo medio")
 
 def compara_grados_libertad():
-    n_funciones = 10
+    n_funciones = 1000
     ini, fin = 1, 250
     simuladas = poblacion_en_rango(ini, fin, n_funciones)
     pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
@@ -265,13 +266,7 @@ def compara_grados_libertad():
     grafica_comparaciones(dic, m, grados_libertad, "Grados de libertad")
 
 def histograma_grados_libertad():
-    n_funciones = 20
-    ini, fin = 1, 250
-    simuladas = poblacion_en_rango(ini, fin, n_funciones)
-    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
-    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
-    dic = {}
-    dic["simuladas"] = simuladas
-    dic["pseudoaleatorias"] = pseudoaleatorias
-    dic["aleatorias"] = aleatorias
-    grafica_histograma(dic, grados_libertad, "Grados de libertad", 64)
+    grafica_histograma(grados_libertad, "Grados de libertad", 64)
+
+def variacion_grados_libertad():
+    grafica_variacion_medida(grados_libertad, combAND_with_not, combOR, "Grados de libertad", "$\\mu_{\\delta}$")

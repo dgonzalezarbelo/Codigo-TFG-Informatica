@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 from collections import deque
 from collections import defaultdict
 import time
-from experimentos import *
 from pyeda.inter import *
+from experimentos import guardar_simulacion
 
 N = 8 # Vértices
 K = N // 2 # Tamaño del clique

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from debug import *
 import random
+from genetic import genera_pseudoaleatoria_puntuacion
 
 def guardar_funciones(ruta, funciones):
     '''
@@ -410,7 +411,7 @@ def grafica_comparaciones(conjuntos_de_funciones, metrica, medida, nombre):
 
     plt.show()
 
-def grafica_histograma(conjuntos_de_funciones, medida, nombre, valor_maximo):
+def grafica_histograma(medida, nombre, valor_maximo):
     '''
     Genera un histograma para comparar la distribución de una medida en distintos conjuntos de funciones.
     Guarda la imagen y los datos en archivos.
@@ -429,6 +430,16 @@ def grafica_histograma(conjuntos_de_funciones, medida, nombre, valor_maximo):
     carpeta_salida=f"metricas/graficas/histograma_{nombre}"
 
     os.makedirs(carpeta_salida, exist_ok=True)
+
+    n_funciones = 20
+    ini, fin = 1, 250
+    simuladas = poblacion_en_rango(ini, fin, n_funciones)
+    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
+    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    conjuntos_de_funciones = {}
+    conjuntos_de_funciones["simuladas"] = simuladas
+    conjuntos_de_funciones["pseudoaleatorias"] = pseudoaleatorias
+    conjuntos_de_funciones["aleatorias"] = aleatorias
 
     fig, ax = plt.subplots(figsize=(8, 6))
     colores = ['r', 'b', 'g', 'y', 'm', 'c']  # Ampliable si hay más grupos
@@ -470,12 +481,7 @@ def grafica_histograma(conjuntos_de_funciones, medida, nombre, valor_maximo):
 
     plt.show()
 
-
-import csv
-import os
-import matplotlib.pyplot as plt
-
-def grafica_variacion_medida(parejas, metrica, medida, combAND, combOR, nombre):
+def grafica_variacion_medida(medida, combAND_with_not, combOR, nombre, simbolo):
     '''
     Esta función sirve para hacer gráficas en las que se comparen los valores
     de cierta medida para parejas de funciones antes y después de pasar por una puerta AND o OR.
@@ -486,7 +492,7 @@ def grafica_variacion_medida(parejas, metrica, medida, combAND, combOR, nombre):
 
     fig, ax = plt.subplots(figsize=(8, 6))
     colores = ['ro', 'bo', 'go', 'yo']
-    title = f"Comparación de puntuación y variación de {nombre}"
+    title = f"Variación de {simbolo}"
 
     min_AND, max_AND, min_OR, max_OR = float('inf'), float('-inf'), float('inf'), float('-inf')
     xAND, yAND = [], []
@@ -494,54 +500,63 @@ def grafica_variacion_medida(parejas, metrica, medida, combAND, combOR, nombre):
 
     datos_csv = []  # Aquí almacenamos los datos para el CSV
 
-    for [f, g] in parejas:
-        m_f, m_g = metrica(f), metrica(g)
-        med_f, med_g = medida(f), medida(g)
+    almacen = leer_json_funciones("experimentos/experimentos_n8/almacen_fnds.json")
 
-        conj = combAND(f, g)
-        disy = combOR(f, g)
-        med_conj, med_disy = medida(conj), medida(disy)
+    min_punt = 25
 
-        var_f_and = med_conj - med_f
-        var_g_and = med_conj - med_g
-        var_f_or = med_disy - med_f
-        var_g_or = med_disy - med_g
-
+    n_parejas = 1000
+    for _ in range(n_parejas):
+        ok = False
+        while not ok:
+            ok = True
+            m_f = random.randint(min_punt, len(almacen) - 1)
+            m_g = random.randint(min_punt, len(almacen) - 1)
+            f = random.choice(almacen[m_f])[0]
+            g = random.choice(almacen[m_g])[0]
+            fAND = combAND_with_not(f, g)
+            if len(fAND) > 150:
+                ok = False
+                continue
+            fOR = combOR(f, g)
+            medAND = medida(fAND)
+            if medAND == 0:
+                ok = False
+            medOR = medida(fOR)
         # Añadir a listas para graficar
-        xAND.extend([m_f, m_g])
-        yAND.extend([var_f_and, var_g_and])
-        xOR.extend([m_f, m_g])
-        yOR.extend([var_f_or, var_g_or])
+        xAND.extend([medida(f), medida(g)])
+        yAND.extend([medAND, medAND])
+        xOR.extend([medida(f), medida(g)])
+        yOR.extend([medOR, medOR])
 
         # Añadir a datos para CSV
         datos_csv.extend([
-            [m_f, 'AND', var_f_and],
-            [m_g, 'AND', var_g_and],
-            [m_f, 'OR', var_f_or],
-            [m_g, 'OR', var_g_or],
+            [m_f, 'AND', medAND],
+            [m_g, 'AND', medAND],
+            [m_f, 'OR', medOR],
+            [m_g, 'OR', medOR],
         ])
 
-        min_AND = min(min_AND, var_f_and, var_g_and)
-        max_AND = max(max_AND, var_f_and, var_g_and)
-        min_OR = min(min_OR, var_f_or, var_g_or)
-        max_OR = max(max_OR, var_f_or, var_g_or)
+        min_AND = min(min_AND, medAND)
+        max_AND = max(max_AND, medAND)
+        min_OR = min(min_OR, medOR)
+        max_OR = max(max_OR, medOR)
 
-        if (len(xAND) // 2) % 100 == 0:
-            print(f"{len(xAND) // 2} puntos con cada puerta calculados")
+        print(f"{len(xAND) // 2} puntos con cada puerta calculados")
+        # if (len(xAND) // 2) % 5 == 0:
 
     ax.plot(xAND, yAND, colores[0], alpha=0.5, label="Variación con AND")
     ax.plot(xOR, yOR, colores[1], alpha=0.5, label="Variación con OR")
 
     texto_info = (
-        f"{len(parejas)} parejas\n"
+        f"{n_parejas} parejas\n"
         f"Variación AND: Máx = {max_AND:.4f}, Mín = {min_AND:.4f}\n"
         f"Variación OR: Máx = {max_OR:.4f}, Mín = {min_OR:.4f}\n"
     )
 
     plt.title(title)
     plt.legend()
-    plt.xlabel("$\\mu_x$")
-    plt.ylabel(f"Variación de {nombre}")
+    plt.xlabel(f"{simbolo}")
+    plt.ylabel(f"{simbolo} tras puertas")
     plt.subplots_adjust(bottom=0.25)
     ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
 
@@ -549,7 +564,6 @@ def grafica_variacion_medida(parejas, metrica, medida, combAND, combOR, nombre):
     ruta_imagen = os.path.join(carpeta_salida, f"variacion_{nombre}.png")
     plt.savefig(ruta_imagen)
     print(f"Gráfica guardada en: {ruta_imagen}")
-    plt.close()
 
     # Guardar datos en CSV
     ruta_csv = os.path.join(carpeta_salida, f"valores_variacion_{nombre}.csv")
@@ -558,3 +572,162 @@ def grafica_variacion_medida(parejas, metrica, medida, combAND, combOR, nombre):
         writer.writerow(['metrica', 'tipo_operacion', 'variacion_medida'])  # Cabecera
         writer.writerows(datos_csv)
     print(f"Datos de la variación guardados en: {ruta_csv}")
+
+    plt.show()
+
+def leer_csv_a_diccionario_generalizado(nombre_archivo):
+    """
+    Lee un archivo CSV con formato tipo,x,y,z,... y lo convierte en un diccionario.
+    
+    Argumentos:
+    nombre_archivo: str
+        El nombre del archivo CSV a leer.
+    
+    Retorna:
+    dict
+        Un diccionario donde las claves son los tipos (e.g. "simuladas", "aleatorias", "pseudoaleatorias")
+        y los valores son listas de tuplas con las coordenadas (x, y, z, ...).
+    """
+    diccionario = {}
+    
+    with open(nombre_archivo, mode='r') as archivo_csv:
+        lector = csv.reader(archivo_csv)
+        next(lector)  # Saltamos la cabecera si existe
+        
+        for fila in lector:
+            tipo = fila[0]  # Primer valor es el tipo
+            coordenadas = tuple(map(float, fila[1:]))  # Convertimos todas las coordenadas a float
+            
+            # Si el tipo no está en el diccionario, lo inicializamos
+            if tipo not in diccionario:
+                diccionario[tipo] = []
+            
+            # Añadimos la tupla de coordenadas al tipo correspondiente
+            diccionario[tipo].append(coordenadas)
+    
+    return diccionario
+
+import matplotlib.pyplot as plt
+from collections import defaultdict
+
+def generar_grafica_desde_diccionario(diccionario):
+    """
+    Genera una gráfica de los puntos en el diccionario, con colores distintos para cada tipo de datos,
+    y traza una sucesión de segmentos que pasa por los puntos mínimos de las "simuladas" y los máximos
+    de las "pseudoaleatorias".
+    
+    Argumentos:
+    diccionario: dict
+        Diccionario donde las claves son los tipos ("simuladas", "aleatorias", "pseudoaleatorias")
+        y los valores son listas de tuplas con las coordenadas (x, y, z, ...).
+    """
+    # Definir los colores según el tipo
+    colores = {
+        "simuladas": "red",      # Rojo para "simuladas"
+        "aleatorias": "green",   # Verde para "aleatorias"
+        "pseudoaleatorias": "blue"  # Azul para "pseudoaleatorias"
+    }
+
+    # Crear la figura y el eje para el gráfico
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    tipos_a_graficar = ["simuladas", "pseudoaleatorias"]
+
+    # Diccionarios para almacenar los valores mínimos y máximos por x
+    simuladas_min = defaultdict(list)  # Para los valores mínimos de simuladas
+    pseudoaleatorias_max = defaultdict(list)  # Para los valores máximos de pseudoaleatorias
+
+    # Recorrer el diccionario y dibujar los puntos
+    for tipo, puntos in diccionario.items():
+        if tipo not in tipos_a_graficar:
+            continue
+
+        puntos = list(filter(lambda x : x[0] > 25, puntos))
+        x_vals = [punto[0] for punto in puntos]  # Extraemos los valores de X
+        y_vals = [punto[1] for punto in puntos]  # Extraemos los valores de Y
+
+        # Dibujar los puntos con el color correspondiente
+        ax.scatter(x_vals, y_vals, color=colores.get(tipo, "black"), label=tipo, alpha=0.6)
+
+        # Agrupar puntos por x y almacenar los mínimos y máximos
+        for x, y in zip(x_vals, y_vals):
+            if tipo == "simuladas":
+                simuladas_min[x].append(y)  # Guardamos los valores de Y para simuladas
+            elif tipo == "pseudoaleatorias":
+                pseudoaleatorias_max[x].append(y)  # Guardamos los valores de Y para pseudoaleatorias
+
+    # # Trazar los segmentos para las simuladas (mínimos por cada valor de x)
+    # simuladas_x = sorted(simuladas_min.keys())
+    # simuladas_y = [min(simuladas_min[x]) for x in simuladas_x]  # Tomamos el mínimo de cada grupo
+    # ax.plot(simuladas_x, simuladas_y, color='red', linestyle='-', marker='o', label="Puntos mínimos simuladas")
+
+    # # Trazar los segmentos para las pseudoaleatorias (máximos por cada valor de x)
+    # pseudoaleatorias_x = sorted(pseudoaleatorias_max.keys())
+    # pseudoaleatorias_y = [max(pseudoaleatorias_max[x]) for x in pseudoaleatorias_x]  # Tomamos el máximo de cada grupo
+    # ax.plot(pseudoaleatorias_x, pseudoaleatorias_y, color='blue', linestyle='-', marker='x', label="Puntos máximos pseudoaleatorias")
+
+    # Añadir título y etiquetas a los ejes
+    ax.set_title("Distribución de puntos con segmentos mínimos y máximos por X")
+    ax.set_xlabel("Eje X")
+    ax.set_ylabel("Eje Y")
+    
+    # Añadir la leyenda
+    ax.legend()
+
+    # Mostrar la gráfica
+    plt.show()
+
+def generar_histograma_desde_diccionario(diccionario, nombre, valor_maximo):
+    '''
+    Genera un histograma para comparar la distribución de las coordenadas en distintos tipos de puntos.
+    
+    Argumentos:
+        diccionario: dict
+            Clave: tipo de punto (simuladas, aleatorias, pseudoaleatorias)
+            Valor: lista de tuplas con las coordenadas (x, y, z, ...).
+        nombre: str
+            Nombre que se usará para el título, ejes, y nombres de archivos.
+        valor_maximo: float
+            Valor máximo en el eje para la visualización del histograma.
+    '''
+    carpeta_salida = f"metricas/graficas/histograma_{nombre}"
+    os.makedirs(carpeta_salida, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    colores = ['r', 'b', 'g', 'y', 'm', 'c']  # Ampliable si hay más grupos
+    i_color = 0
+
+    # Rango predefinido del histograma (ajustable)
+    min_valor, max_valor = 0, valor_maximo
+    paso = (max_valor - min_valor) / 100
+    bins = np.arange(min_valor, max_valor + paso, paso)
+
+    tipos_a_graficar = ["simuladas", "pseudoaleatorias"]
+
+    x_min = 25
+
+    # Recorremos el diccionario con los puntos
+    for tipo, puntos in diccionario.items():
+        if tipo not in tipos_a_graficar:
+            continue
+
+        # Extraemos las coordenadas x y de los puntos
+        puntos = list(filter(lambda x : x[0] > x_min, puntos))
+        x_vals = [punto[0] for punto in puntos]
+        y_vals = [punto[1] for punto in puntos]
+
+        # Dibujamos el histograma de las coordenadas x y en el gráfico
+        # ax.hist(x_vals, bins=bins, alpha=0.5, 
+        #         color=colores[i_color % len(colores)], 
+        #         label=f"Puntos {tipo} (X)", edgecolor='black', align='mid')
+        ax.hist(y_vals, bins=bins, alpha=0.5, 
+                color=colores[i_color % len(colores)], 
+                label=f"Puntos {tipo} (Y)", edgecolor='black', align='mid')
+        i_color += 1
+
+    # Configuración de la gráfica
+    plt.title(f"Distribución de coordenadas para {nombre}")
+    plt.xlabel("Valor de la coordenada")
+    plt.ylabel("Número de puntos")
+    plt.legend()
+    plt.show()

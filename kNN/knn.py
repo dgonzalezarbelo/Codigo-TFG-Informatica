@@ -29,8 +29,8 @@ def genera_dataset_knn():
     datos = []
     for i, f in enumerate(simuladas):
         metrica = m(f)
-        solapamiento = intra_solapamiento(f)
-        homogeneidad = equidad(f)
+        solapamiento = solapamiento(f)
+        homogeneidad = homogeneidad(f)
         grados_libertad = sesgo_medio(f)
         datos.append((metrica, solapamiento, homogeneidad, grados_libertad, 'simulada'))
         if (i + 1) % 10 == 0:
@@ -38,8 +38,8 @@ def genera_dataset_knn():
         
     for i, f in enumerate(no_simuladas):
         metrica = m(f)
-        solapamiento = intra_solapamiento(f)
-        homogeneidad = equidad(f)
+        solapamiento = solapamiento(f)
+        homogeneidad = homogeneidad(f)
         grados_libertad = sesgo_medio(f)
         datos.append((metrica, solapamiento, homogeneidad, grados_libertad, 'no_simulada'))
         if (i + 1) % 10 == 0:

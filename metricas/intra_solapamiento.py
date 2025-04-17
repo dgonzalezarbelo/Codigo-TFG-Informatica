@@ -1,8 +1,11 @@
 from syntactic import *
 from debug import debug
 from genetic import *
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+from experimentos import *
 
-def intra_solapamiento(f):
+def solapamiento(f):
     '''Calcula la intersección promedio entre cláusulas de f'''
     sum = 0
     n = len(f)
@@ -31,14 +34,14 @@ def grafica_sopalamiento_simuladas_vs_aleatorias():
         while len(fSim) == 1:
             fSim = random.choice(almacen[punt])
         xSim.append(punt)
-        ySim.append(intra_solapamiento(fSim))
+        ySim.append(solapamiento(fSim))
         
         fAl = genera_pseudoaleatoria_puntuacion(punt)
         while len(fAl) == 1:
             fAl = genera_pseudoaleatoria_puntuacion(punt)
 
         xAl.append(punt)
-        yAl.append(intra_solapamiento(fAl))
+        yAl.append(solapamiento(fAl))
         debug(f"{i + 1} solapamientos simulados y pseudo-aleatorios calculados")
 
     # Graficamos los resultados
@@ -60,11 +63,11 @@ def grafica_intrasolapamiento_mejores(n_funciones):
     dic["simuladas"] = simuladas
     dic["pseudoaleatorias"] = pseudoaleatorias
     dic["aleatorias"] = aleatorias
-    grafica_comparaciones(dic, m, intra_solapamiento, "Intra-solapamiento")
+    grafica_comparaciones(dic, m, solapamiento, "Solapamiento")
 
 def grafica_variacion_intrasolapamiento(n_funciones):
     parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
-    grafica_variacion_medida(parejas, m, intra_solapamiento, combAND_with_not, combOR, "Intra-solapamiento")
+    grafica_variacion_medida(parejas, m, solapamiento, combAND_with_not, combOR, "Solapamiento")
 
 def compara_solapamiento():
     n_funciones = 1000
@@ -76,4 +79,45 @@ def compara_solapamiento():
     dic["simuladas"] = simuladas
     dic["pseudoaleatorias"] = pseudoaleatorias
     dic["aleatorias"] = aleatorias
-    grafica_comparaciones(dic, m, intra_solapamiento, "Homogeneidad")
+    grafica_comparaciones(dic, m, solapamiento, "Solapamiento")
+
+def matriz_confusion_umbral_solapamiento(diccionario, umbral=0.1):
+    """
+    Predice el tipo de cada punto en función de su coordenada Y y muestra la matriz de confusión.
+
+    Argumentos:
+        diccionario: dict
+            Diccionario con claves "simuladas", "pseudoaleatorias", etc.
+            Los valores son listas de tuplas con coordenadas (x, y, ...).
+        umbral: float
+            Umbral de la coordenada Y para decidir la predicción.
+            Por defecto es 0.1.
+    """
+
+    # Nos centramos solo en simuladas y pseudoaleatorias
+    tipos_validos = ["simuladas", "pseudoaleatorias"]
+    y_true = []
+    y_pred = []
+
+    for tipo in tipos_validos:
+        puntos = diccionario.get(tipo, [])
+        for punto in puntos:
+            y = punto[1]  # Suponemos que la coordenada Y es la de solapamiento
+            y_true.append(tipo)
+            if y < umbral:
+                y_pred.append("pseudoaleatorias")
+            else:
+                y_pred.append("simuladas")
+
+    # Generamos la matriz de confusión
+    etiquetas = ["simuladas", "pseudoaleatorias"]
+    matriz = confusion_matrix(y_true, y_pred, labels=etiquetas)
+    disp = ConfusionMatrixDisplay(confusion_matrix=matriz, display_labels=etiquetas)
+
+    # Mostramos la matriz
+    disp.plot(cmap=plt.cm.Blues)
+    plt.title(f"Matriz de confusión (umbral = {umbral})")
+    plt.show()
+
+def variacion_solapamiento():
+    grafica_variacion_medida(solapamiento, combAND_with_not, combOR, "Solapamiento")
