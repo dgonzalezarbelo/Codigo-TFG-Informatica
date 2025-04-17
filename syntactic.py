@@ -418,9 +418,10 @@ def simulate_circuit_with_not() :
     and_iter = 15
     max_size = 150
     limit = 300
-    iter = 300
+    # iter = 1000
+    # iter = 300
     # iter = 50
-    # iter = 10
+    iter = 10
     xOR = []; xAND = []
     yOR = []; yAND = []
 
@@ -429,8 +430,8 @@ def simulate_circuit_with_not() :
     # El número de puertas puede no ser óptimo, pero nos lo guardamos para analizar datos en otro momento
     fnds = [[] for _ in range(M_CLIQUE + 1)]
     for i in range(1, A + 1):
-        fnds[1].append(([i], 0))
-        fnds[0].append(([-i], 0))
+        fnds[1].append(([[i]], 0))
+        fnds[0].append(([[-i]], 0))
 
     tiempo = 0
     for _ in range(iter) :
@@ -481,13 +482,13 @@ def simulate_circuit_with_not() :
         
         S.sort(key = CLAVE_NEG)
         while len(S) > limit : S.pop()
-        print(f"Máxima puntuación: {S[0][1]}")
+        print(f"Máxima puntuación: {CLAVE(max(S, key=CLAVE))}")
     
     guardar_simulacion(None, fnds, iter, xAND, yAND, xOR, yOR)
     
     mostrar_grafica = False
     if mostrar_grafica:
-        print("Incremento máximo:", S[0][1])
+        print("Incremento máximo:", CLAVE(max(S, key=CLAVE)))
         print(f"Tiempo de ejecución: {tiempo}")
         fig = plt.figure(figsize = (8,5))
         #plt.xlim([0,420])

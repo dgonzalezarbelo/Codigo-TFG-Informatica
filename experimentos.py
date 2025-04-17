@@ -238,6 +238,10 @@ def almacena_fnds(ruta_nuevas, ruta_almacen):
     almacen = leer_json_funciones(ruta_almacen)
     nuevas = leer_json_funciones(ruta_nuevas)
     
+    total = new = 0
+    for i in range(len(almacen)):
+        total += len(almacen[i])
+
     # Buscamos cada una de las nuevas FNDs
     max_punt = len(nuevas) - 1
     while len(almacen) <= max_punt:
@@ -255,6 +259,8 @@ def almacena_fnds(ruta_nuevas, ruta_almacen):
                     break
             if not encontrada:
                 almacen[punt].append(f)
+                total += 1
+                new += 1
 
     # Nos quedamos solo con funciones hasta la puntuación máxima, no queremos listas vacías a partir de ahí
     while len(almacen) > 0 and len(almacen[-1]) == 0:
@@ -262,6 +268,10 @@ def almacena_fnds(ruta_nuevas, ruta_almacen):
 
     # Guardamos el almacen actualizado
     guardar_funciones(ruta_almacen, almacen)
+
+    print("Funciones guardadas en el almacén")
+    print(f"Total de funciones almacenadas: {total}")
+    print(f"Nuevas funciones almacenadas: {new}")
 
 def filtrar_almacen_por_longitud(ruta_almacen="experimentos/experimentos_n8/almacen_fnds.json"):
     almacen = leer_json_funciones(ruta_almacen)
@@ -328,141 +338,223 @@ def grafica_puntuaciones_por_puertas(funciones):
 
 def grafica_comparaciones(conjuntos_de_funciones, metrica, medida, nombre):
     '''
-    Esta función sirve para hacer gráficas en las que se comparen los valores
-    de cierta medida para varios grupos de funciones.
-    Principalmente se usará para comparar funciones simuladas, aleatorias y pseudoaleatorias.
-    Argumentos:
-        conjuntos_de_funciones: Diccionario donde la clave es el tipo de función (simulada, aleatoria, ...)
-                                y la clave es una lista de listas (índice = puntuación de las funciones)
+    Esta función genera una gráfica que compara valores de una medida para varios grupos de funciones.
+    Además guarda la gráfica como imagen y las coordenadas como archivo CSV.
+
+    Parámetros:
+        conjuntos_de_funciones: dict
+            Diccionario con claves como 'simuladas', 'aleatorias', etc. y valores como listas de funciones.
+        metrica: function
+            Función para obtener el valor del eje x.
+        medida: function
+            Función para obtener el valor del eje y.
+        nombre: str
+            Nombre para identificar la medida y nombrar los archivos.
+        carpeta_salida: str
+            Carpeta donde se guardarán los resultados (imagen y CSV).
     '''
-    # fig = plt.figure(figsize = (8,5))
+
+    carpeta_salida=f"metricas/graficas/comparaciones_{nombre}"
+
+    # Crear carpeta si no existe
+    os.makedirs(carpeta_salida, exist_ok=True)
+
     fig, ax = plt.subplots(figsize=(8, 6))
     i_color = 0
     colores = ['ro', 'bo', 'go', 'yo']
     title = f"Comparación de puntuación y {nombre}"
     maximos, minimos = {}, {}
 
-    # Recogemos los datos
     texto_info = ""
+    all_data = []  # Lista para guardar todos los puntos
+
     for tipo, funciones in conjuntos_de_funciones.items():
         maximos[tipo], minimos[tipo] = float('-inf'), float('inf')
         xs, ys = [], []
         for f in funciones:
-            xs.append(metrica(f))
+            x = metrica(f)
             y = medida(f)
+            xs.append(x)
             ys.append(y)
+            all_data.append([tipo, x, y])
             maximos[tipo] = max(maximos[tipo], y)
             minimos[tipo] = min(minimos[tipo], y)
             if len(xs) % 100 == 0:
                 print(f"{len(xs)} puntos de funciones {tipo} calculados")
-        # plt.plot(xs, ys, colores[i_color], alpha = 0.5, label = f"Funciones {tipo}")
+
         ax.plot(xs, ys, colores[i_color], alpha=0.5, label=f"Funciones {tipo}")
         i_color += 1
 
-    # Mostramos mínimos y máximos debajo de la gráfica
     for tipo in conjuntos_de_funciones.keys():
         texto_info += f"{len(conjuntos_de_funciones[tipo])} funciones {tipo}: Máx = {maximos[tipo]:.4f}, Mín = {minimos[tipo]:.4f}\n"
-    
+
     plt.title(title)
     plt.legend()
     plt.xlabel("$\mu_x(f)$")
     plt.ylabel(nombre)
-    
-    # Ajustamos márgenes para dejar espacio para el texto
     plt.subplots_adjust(bottom=0.25)
-
-    # Ajustamos la posición del texto justo debajo de la gráfica
     ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
+
+    # Guardar la figura
+    ruta_imagen = os.path.join(carpeta_salida, f"grafica_{nombre}.png")
+    plt.savefig(ruta_imagen)
+    print(f"Gráfica guardada en: {ruta_imagen}")
+
+    # Guardar datos en CSV
+    ruta_csv = os.path.join(carpeta_salida, f"datos_{nombre}.csv")
+    with open(ruta_csv, mode='w', newline='') as archivo_csv:
+        writer = csv.writer(archivo_csv)
+        writer.writerow(['tipo', 'x', 'y'])  # Cabecera
+        writer.writerows(all_data)
+    print(f"Datos guardados en: {ruta_csv}")
 
     plt.show()
 
-def grafica_histograma(conjuntos_de_funciones, medida, nombre):
+def grafica_histograma(conjuntos_de_funciones, medida, nombre, valor_maximo):
     '''
     Genera un histograma para comparar la distribución de una medida en distintos conjuntos de funciones.
-    
+    Guarda la imagen y los datos en archivos.
+
     Argumentos:
-        conjuntos_de_funciones: Diccionario donde la clave es el tipo de función (simulada, aleatoria, ...)
-                                y el valor es una lista de listas de funciones.
-        medida: Función que calcula la medida de interés para cada función.
-        nombre: Nombre de la medida que se mostrará en los ejes y título.
+        conjuntos_de_funciones: dict
+            Clave: tipo de función (simulada, aleatoria, etc.)
+            Valor: lista de funciones
+        medida: function
+            Función que calcula la medida de interés.
+        nombre: str
+            Nombre que se usará para el título, ejes, y nombres de archivos.
+        carpeta_salida: str
+            Carpeta donde se guardarán los resultados.
     '''
+    carpeta_salida=f"metricas/graficas/histograma_{nombre}"
+
+    os.makedirs(carpeta_salida, exist_ok=True)
+
     fig, ax = plt.subplots(figsize=(8, 6))
-    colores = ['r', 'b', 'g', 'y', 'm', 'c']  # Colores para distinguir cada conjunto
+    colores = ['r', 'b', 'g', 'y', 'm', 'c']  # Ampliable si hay más grupos
     i_color = 0
-    
-    # Determinar el rango de valores de la medida
-    min_valor, max_valor = 0, 4500 # El maximo para n = 8 es 4480
-    bins = np.arange(min_valor // 100 * 100, (max_valor // 100 + 2) * 100, 100)
-    
-    # Recolectamos los valores de la medida para cada conjunto de funciones
+
+    # Rango predefinido del histograma (ajustable)
+    min_valor, max_valor = 0, valor_maximo
+    paso = (max_valor - min_valor) / 100
+    bins = np.arange(min_valor, max_valor + paso, paso)
+
+    # Lista para guardar todos los valores individuales para el CSV
+    all_data = []
+
     for tipo, funciones in conjuntos_de_funciones.items():
         valores_medida = [medida(f) for f in funciones]
-        ax.hist(valores_medida, bins=bins, alpha=0.5, color=colores[i_color % len(colores)], 
+        all_data.extend([[tipo, v] for v in valores_medida])  # Guardamos tipo y valor
+        ax.hist(valores_medida, bins=bins, alpha=0.5, 
+                color=colores[i_color % len(colores)], 
                 label=f"Funciones {tipo}", edgecolor='black', align='mid')
         i_color += 1
-    
+
     plt.title(f"Distribución de {nombre}")
     plt.xlabel(nombre)
     plt.ylabel("Número de funciones")
     plt.legend()
+
+    # Guardar la figura
+    ruta_imagen = os.path.join(carpeta_salida, f"histograma_{nombre}.png")
+    plt.savefig(ruta_imagen)
+    print(f"Histograma guardado en: {ruta_imagen}")
+
+    # Guardar datos en CSV
+    ruta_csv = os.path.join(carpeta_salida, f"valores_histograma_{nombre}.csv")
+    with open(ruta_csv, mode='w', newline='') as archivo_csv:
+        writer = csv.writer(archivo_csv)
+        writer.writerow(['tipo', 'valor_medida'])  # Cabecera
+        writer.writerows(all_data)
+    print(f"Datos del histograma guardados en: {ruta_csv}")
+
     plt.show()
+
+
+import csv
+import os
+import matplotlib.pyplot as plt
 
 def grafica_variacion_medida(parejas, metrica, medida, combAND, combOR, nombre):
     '''
     Esta función sirve para hacer gráficas en las que se comparen los valores
     de cierta medida para parejas de funciones antes y después de pasar por una puerta AND o OR.
+    También guarda los datos en un archivo CSV.
     '''
-    # fig = plt.figure(figsize = (8,5))
+    carpeta_salida = f"metricas/graficas/variacion_{nombre}"
+    os.makedirs(carpeta_salida, exist_ok=True)
+
     fig, ax = plt.subplots(figsize=(8, 6))
     colores = ['ro', 'bo', 'go', 'yo']
     title = f"Comparación de puntuación y variación de {nombre}"
 
     min_AND, max_AND, min_OR, max_OR = float('inf'), float('-inf'), float('inf'), float('-inf')
-
-    # Recogemos los datos
-    texto_info = ""
     xAND, yAND = [], []
     xOR, yOR = [], []
+
+    datos_csv = []  # Aquí almacenamos los datos para el CSV
+
     for [f, g] in parejas:
-        # maximos[tipo], minimos[tipo] = float('-inf'), float('inf')
         m_f, m_g = metrica(f), metrica(g)
         med_f, med_g = medida(f), medida(g)
-        xAND.append(m_f); xAND.append(m_g)
-        xOR.append(m_f); xOR.append(m_g)
-        
+
         conj = combAND(f, g)
         disy = combOR(f, g)
         med_conj, med_disy = medida(conj), medida(disy)
-        yAND.append(med_conj - med_f); yAND.append(med_conj - med_g)
-        yOR.append(med_disy - med_f); yOR.append(med_disy - med_g)
 
-        min_AND = min(min_AND, med_conj - med_f, med_conj - med_g)
-        max_AND = max(max_AND, med_conj - med_f, med_conj - med_g)
-        min_OR = min(min_OR, med_disy - med_f, med_disy - med_g)
-        max_OR = max(max_OR, med_disy - med_f, med_disy - med_g)
+        var_f_and = med_conj - med_f
+        var_g_and = med_conj - med_g
+        var_f_or = med_disy - med_f
+        var_g_or = med_disy - med_g
+
+        # Añadir a listas para graficar
+        xAND.extend([m_f, m_g])
+        yAND.extend([var_f_and, var_g_and])
+        xOR.extend([m_f, m_g])
+        yOR.extend([var_f_or, var_g_or])
+
+        # Añadir a datos para CSV
+        datos_csv.extend([
+            [m_f, 'AND', var_f_and],
+            [m_g, 'AND', var_g_and],
+            [m_f, 'OR', var_f_or],
+            [m_g, 'OR', var_g_or],
+        ])
+
+        min_AND = min(min_AND, var_f_and, var_g_and)
+        max_AND = max(max_AND, var_f_and, var_g_and)
+        min_OR = min(min_OR, var_f_or, var_g_or)
+        max_OR = max(max_OR, var_f_or, var_g_or)
 
         if (len(xAND) // 2) % 100 == 0:
             print(f"{len(xAND) // 2} puntos con cada puerta calculados")
-    
-    # plt.plot(xs, ys, colores[i_color], alpha = 0.5, label = f"Funciones {tipo}")
-    ax.plot(xAND, yAND, colores[0], alpha=0.5, label=f"Variación con AND")
-    ax.plot(xOR, yOR, colores[1], alpha=0.5, label=f"Variación con OR")
 
-    # Mostramos mínimos y máximos debajo de la gráfica
-    texto_info += f"{len(parejas)} parejas\n"
-    texto_info += f"Variación AND: Máx = {max_AND:.4f}, Mín = {min_AND:.4f}\n"
-    texto_info += f"Variación OR: Máx = {max_OR:.4f}, Mín = {min_OR:.4f}\n"
-    
+    ax.plot(xAND, yAND, colores[0], alpha=0.5, label="Variación con AND")
+    ax.plot(xOR, yOR, colores[1], alpha=0.5, label="Variación con OR")
+
+    texto_info = (
+        f"{len(parejas)} parejas\n"
+        f"Variación AND: Máx = {max_AND:.4f}, Mín = {min_AND:.4f}\n"
+        f"Variación OR: Máx = {max_OR:.4f}, Mín = {min_OR:.4f}\n"
+    )
+
     plt.title(title)
     plt.legend()
-    plt.xlabel("$\mu_x$")
+    plt.xlabel("$\\mu_x$")
     plt.ylabel(f"Variación de {nombre}")
-    
-    # Ajustamos márgenes para dejar espacio para el texto
     plt.subplots_adjust(bottom=0.25)
-
-    # Ajustamos la posición del texto justo debajo de la gráfica
     ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
-    plt.savefig(f"metricas/graficas/variacion_{nombre}")
-    # plt.show()
+
+    # Guardar la imagen
+    ruta_imagen = os.path.join(carpeta_salida, f"variacion_{nombre}.png")
+    plt.savefig(ruta_imagen)
+    print(f"Gráfica guardada en: {ruta_imagen}")
     plt.close()
+
+    # Guardar datos en CSV
+    ruta_csv = os.path.join(carpeta_salida, f"valores_variacion_{nombre}.csv")
+    with open(ruta_csv, mode='w', newline='') as archivo_csv:
+        writer = csv.writer(archivo_csv)
+        writer.writerow(['metrica', 'tipo_operacion', 'variacion_medida'])  # Cabecera
+        writer.writerows(datos_csv)
+    print(f"Datos de la variación guardados en: {ruta_csv}")

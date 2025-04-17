@@ -6,6 +6,8 @@ def intra_solapamiento(f):
     '''Calcula la intersección promedio entre cláusulas de f'''
     sum = 0
     n = len(f)
+    if n <= 1: #FIXME Igual sería mejor lanzar una excepción en este caso, la precondición debería ser n >= 2
+        return 0
     for i in range(n):
         for j in range(i + 1, n):
             sum += common_literals(f[i], f[j]) / max(len(f[i]), len(f[j]))
@@ -63,3 +65,15 @@ def grafica_intrasolapamiento_mejores(n_funciones):
 def grafica_variacion_intrasolapamiento(n_funciones):
     parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
     grafica_variacion_medida(parejas, m, intra_solapamiento, combAND_with_not, combOR, "Intra-solapamiento")
+
+def compara_solapamiento():
+    n_funciones = 1000
+    ini, fin = 1, 250
+    simuladas = poblacion_en_rango(ini, fin, n_funciones)
+    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
+    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_comparaciones(dic, m, intra_solapamiento, "Homogeneidad")

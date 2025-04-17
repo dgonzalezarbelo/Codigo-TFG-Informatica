@@ -9,6 +9,7 @@ from metricas.sesgo import *
 from metricas.equidad import *
 from metricas.perdidas import *
 from metricas.clausulas_perfectas import *
+from kNN.knn import *
 import time
 
 # Función a la que llamar para hacer lo que quiera
@@ -109,8 +110,16 @@ def main():
 
     # obtener_mejores_pseudoaleatorias(300, 350)
     # almacena_fnds("experimentos/experimentos_n8/Simulacion_300_iteraciones_reducidas/funciones_fnd.json", "experimentos/experimentos_n8/almacen_fnds.json")
+    # almacena_fnds("experimentos/2025-04-15_18-11-26/funciones_fnd.json", "experimentos/experimentos_n8/almacen_fnds.json")
 
     # genera_aleatorias()
-    compara_grados_libertad()
+    # compara_grados_libertad()
+    # compara_solapamiento()
+    # compara_homogeneidad()
+
+    histograma_grados_libertad()
+
+    # genera_dataset_knn()
+    # knn()
 
 main()

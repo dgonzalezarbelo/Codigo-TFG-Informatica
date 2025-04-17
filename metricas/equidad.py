@@ -60,3 +60,15 @@ def grafica_equidad_mejores(n_funciones):
 def grafica_variacion_equidad(n_funciones):
     parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
     grafica_variacion_medida(parejas, m, equidad, combAND_with_not, combOR, "Equidad")
+
+def compara_homogeneidad():
+    n_funciones = 1000
+    ini, fin = 1, 250
+    simuladas = poblacion_en_rango(ini, fin, n_funciones)
+    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
+    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    dic = {}
+    dic["simuladas"] = simuladas
+    dic["pseudoaleatorias"] = pseudoaleatorias
+    dic["aleatorias"] = aleatorias
+    grafica_comparaciones(dic, m, equidad, "Homogeneidad")
