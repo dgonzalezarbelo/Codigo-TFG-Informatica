@@ -1,6 +1,5 @@
 from syntactic import *
 import time
-import math
 import random
 from debug import debug
 from debug import tam_total

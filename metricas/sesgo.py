@@ -266,7 +266,25 @@ def compara_grados_libertad():
     grafica_comparaciones(dic, m, grados_libertad, "Grados de libertad")
 
 def histograma_grados_libertad():
-    grafica_histograma(grados_libertad, "Grados de libertad", 64)
+    n_funciones = 20
+    ini, fin = 1, 250
+    simuladas = poblacion_en_rango(ini, fin, n_funciones)
+    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
+    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    conjuntos_de_funciones = {}
+    conjuntos_de_funciones["simuladas"] = simuladas
+    conjuntos_de_funciones["pseudoaleatorias"] = pseudoaleatorias
+    conjuntos_de_funciones["aleatorias"] = aleatorias
+    grafica_histograma(conjuntos_de_funciones, grados_libertad, "Grados de libertad", 64)
 
 def variacion_grados_libertad():
-    grafica_variacion_medida(grados_libertad, combAND_with_not, combOR, "Grados de libertad", "$\\mu_{\\delta}$")
+    n_funciones = 20
+    ini, fin = 1, 250
+    simuladas = poblacion_en_rango(ini, fin, n_funciones)
+    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
+    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    conjuntos_de_funciones = {}
+    conjuntos_de_funciones["simuladas"] = simuladas
+    conjuntos_de_funciones["pseudoaleatorias"] = pseudoaleatorias
+    conjuntos_de_funciones["aleatorias"] = aleatorias
+    grafica_variacion_medida(conjuntos_de_funciones, grados_libertad, combAND_with_not, combOR, "Grados de libertad", "$\\mu_{\\delta}$")

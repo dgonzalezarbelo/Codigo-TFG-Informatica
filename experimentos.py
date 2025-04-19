@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from debug import *
 import random
-from genetic import genera_pseudoaleatoria_puntuacion
+from collections import defaultdict
 
 def guardar_funciones(ruta, funciones):
     '''
@@ -411,7 +411,7 @@ def grafica_comparaciones(conjuntos_de_funciones, metrica, medida, nombre):
 
     plt.show()
 
-def grafica_histograma(medida, nombre, valor_maximo):
+def grafica_histograma(conjuntos_de_funciones, medida, nombre, valor_maximo):
     '''
     Genera un histograma para comparar la distribución de una medida en distintos conjuntos de funciones.
     Guarda la imagen y los datos en archivos.
@@ -430,16 +430,6 @@ def grafica_histograma(medida, nombre, valor_maximo):
     carpeta_salida=f"metricas/graficas/histograma_{nombre}"
 
     os.makedirs(carpeta_salida, exist_ok=True)
-
-    n_funciones = 20
-    ini, fin = 1, 250
-    simuladas = poblacion_en_rango(ini, fin, n_funciones)
-    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
-    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
-    conjuntos_de_funciones = {}
-    conjuntos_de_funciones["simuladas"] = simuladas
-    conjuntos_de_funciones["pseudoaleatorias"] = pseudoaleatorias
-    conjuntos_de_funciones["aleatorias"] = aleatorias
 
     fig, ax = plt.subplots(figsize=(8, 6))
     colores = ['r', 'b', 'g', 'y', 'm', 'c']  # Ampliable si hay más grupos
@@ -607,10 +597,7 @@ def leer_csv_a_diccionario_generalizado(nombre_archivo):
     
     return diccionario
 
-import matplotlib.pyplot as plt
-from collections import defaultdict
-
-def generar_grafica_desde_diccionario(diccionario):
+def generar_grafica_desde_diccionario(diccionario, ejeX, ejeY, titulo):
     """
     Genera una gráfica de los puntos en el diccionario, con colores distintos para cada tipo de datos,
     y traza una sucesión de segmentos que pasa por los puntos mínimos de las "simuladas" y los máximos
@@ -631,7 +618,7 @@ def generar_grafica_desde_diccionario(diccionario):
     # Crear la figura y el eje para el gráfico
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    tipos_a_graficar = ["simuladas", "pseudoaleatorias"]
+    tipos_a_graficar = ["simuladas", "pseudoaleatorias", "aleatorias"]
 
     # Diccionarios para almacenar los valores mínimos y máximos por x
     simuladas_min = defaultdict(list)  # Para los valores mínimos de simuladas
@@ -667,9 +654,9 @@ def generar_grafica_desde_diccionario(diccionario):
     # ax.plot(pseudoaleatorias_x, pseudoaleatorias_y, color='blue', linestyle='-', marker='x', label="Puntos máximos pseudoaleatorias")
 
     # Añadir título y etiquetas a los ejes
-    ax.set_title("Distribución de puntos con segmentos mínimos y máximos por X")
-    ax.set_xlabel("Eje X")
-    ax.set_ylabel("Eje Y")
+    ax.set_title(titulo)
+    ax.set_xlabel(ejeX)
+    ax.set_ylabel(ejeY)
     
     # Añadir la leyenda
     ax.legend()
@@ -677,7 +664,7 @@ def generar_grafica_desde_diccionario(diccionario):
     # Mostrar la gráfica
     plt.show()
 
-def generar_histograma_desde_diccionario(diccionario, nombre, valor_maximo):
+def generar_histograma_desde_diccionario(diccionario, ejeX, titulo, valor_maximo):
     '''
     Genera un histograma para comparar la distribución de las coordenadas en distintos tipos de puntos.
     
@@ -690,8 +677,6 @@ def generar_histograma_desde_diccionario(diccionario, nombre, valor_maximo):
         valor_maximo: float
             Valor máximo en el eje para la visualización del histograma.
     '''
-    carpeta_salida = f"metricas/graficas/histograma_{nombre}"
-    os.makedirs(carpeta_salida, exist_ok=True)
 
     fig, ax = plt.subplots(figsize=(8, 6))
     colores = ['r', 'b', 'g', 'y', 'm', 'c']  # Ampliable si hay más grupos
@@ -722,12 +707,12 @@ def generar_histograma_desde_diccionario(diccionario, nombre, valor_maximo):
         #         label=f"Puntos {tipo} (X)", edgecolor='black', align='mid')
         ax.hist(y_vals, bins=bins, alpha=0.5, 
                 color=colores[i_color % len(colores)], 
-                label=f"Puntos {tipo} (Y)", edgecolor='black', align='mid')
+                label=f"{tipo}", edgecolor='black', align='mid')
         i_color += 1
 
     # Configuración de la gráfica
-    plt.title(f"Distribución de coordenadas para {nombre}")
-    plt.xlabel("Valor de la coordenada")
-    plt.ylabel("Número de puntos")
+    plt.title(titulo)
+    plt.xlabel(ejeX)
+    plt.ylabel("Número de funciones")
     plt.legend()
     plt.show()

@@ -75,4 +75,14 @@ def compara_homogeneidad():
     grafica_comparaciones(dic, m, homogeneidad, "Homogeneidad")
 
 def variacion_homogeneidad():
-    grafica_variacion_medida(homogeneidad, combAND_with_not, combOR, "Homogeneidad")
+    
+    n_funciones = 20
+    ini, fin = 1, 250
+    simuladas = poblacion_en_rango(ini, fin, n_funciones)
+    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
+    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    conjuntos_de_funciones = {}
+    conjuntos_de_funciones["simuladas"] = simuladas
+    conjuntos_de_funciones["pseudoaleatorias"] = pseudoaleatorias
+    conjuntos_de_funciones["aleatorias"] = aleatorias
+    grafica_variacion_medida(conjuntos_de_funciones, homogeneidad, combAND_with_not, combOR, "Homogeneidad")

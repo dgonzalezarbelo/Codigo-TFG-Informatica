@@ -15,11 +15,11 @@ import time
 # Función a la que llamar para hacer lo que quiera
 def main():
     # obtener_mejores_aleatorias(150, 200)
-    
+
     # obtener_mejores_aleatorias(200, 250)
-    
+
     # obtener_mejores_simuladas(150, 200)
-    
+
     # prueba_diferencia_sesgo_simuladas_aleatorias()
     # filtrar_almacen_por_longitud()
     # fnd = [[idx[1][2], idx[1][3], idx[1][4], idx[2][3], idx[2][4], idx[3][4]]]
@@ -41,7 +41,7 @@ def main():
     #     punt = random.randint(1, 250)
     #     aleatorias[punt].append(genera_pseudoaleatoria_puntuacion(punt))
     # grafica_sesgo(aleatorias)
-    
+
     # grafica_sopalamiento_simuladas_vs_aleatorias()
 
     # grafica_relacion_puntuacion_inter_solapamiento("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json")
@@ -55,7 +55,7 @@ def main():
     # grafica_equidad_simuladas_vs_aleatorias()
 
     # print(intra_solapamiento(clique))
-    
+
     # genera_aleatorias()
     # obtener_mejores_aleatorias(100, 150)
 
@@ -79,7 +79,7 @@ def main():
     # grafica_variacion_perdidas_puntuacion(100)
     # grafica_variacion_sesgo_min(100)
     # grafica_variacion_sesgo_medio(100)
-    
+
     # grafica_grados_libertad_mejores(1000)
 
     # print(intra_solapamiento(clique))
@@ -103,7 +103,7 @@ def main():
 
     # reducir_almacen(reduce, m)
     # reducir_almacen(reduce, ruta_almacen="experimentos/experimentos_n8/almacen_fnds copy.json")
-    # reducir_almacen(reduce, m, ruta_almacen="experimentos/experimentos_n8/almacen_aleatorias copy.json")
+    # reducir_almacen(reduce_pyeda, m, ruta_almacen="experimentos/experimentos_n8/almacen_aleatorias.json")
 
     # pruebas_reduccion()
 
@@ -113,7 +113,7 @@ def main():
 
     # genera_aleatorias()
     # compara_solapamiento()
-    # compara_homogeneidad()
+    compara_homogeneidad()
     # compara_grados_libertad()
 
     # histograma_grados_libertad()
@@ -122,12 +122,17 @@ def main():
     # knn()
 
     # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Solapamiento/datos_Solapamiento.csv")
-    # generar_grafica_desde_diccionario(dic)
-    # generar_histograma_desde_diccionario(dic, "Grados de libertad", 64)
+    # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_s(f)$", "Relación de la métrica sintáctica y el solapamiento")
+    # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_s$ para funciones pseudoaleatorias y simuladas", 0.5)
+    # matriz_confusion_umbral_solapamiento(dic)
+
+    # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Homogeneidad/datos_Homogeneidad.csv")
+    # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_h(f)$", "Relación de la métrica sintáctica y la homogeneidad")
+    # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_h$ para funciones pseudoaleatorias y simuladas", 0.5)
     # matriz_confusion_umbral_solapamiento(dic)
 
     # variacion_solapamiento()
     # variacion_homogeneidad()
-    variacion_grados_libertad()
+    # variacion_grados_libertad()
 
 main()
