@@ -234,7 +234,7 @@ def get_rand_fun_with_not() :
 # Genera una función realmente aleatoria
 def genera_funcion_aleatoria():
     '''Genera una función totalmente aleatoria'''
-    n_clausulas = random.randint(1, CLAUSULAS)
+    n_clausulas = random.randint(50, CLAUSULAS)
     fnd = []
     inputs = [i for i in range(1, A + 1)]
     for i in range(n_clausulas):
