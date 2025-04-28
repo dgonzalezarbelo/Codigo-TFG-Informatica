@@ -113,7 +113,7 @@ def main():
 
     # genera_aleatorias()
     # compara_solapamiento()
-    compara_homogeneidad()
+    # compara_homogeneidad()
     # compara_grados_libertad()
 
     # histograma_grados_libertad()
@@ -134,5 +134,8 @@ def main():
     # variacion_solapamiento()
     # variacion_homogeneidad()
     # variacion_grados_libertad()
+
+    # compare_rand_fun()
+    compara_productividad_simuladas_pseudoaleatorias()
 
 main()

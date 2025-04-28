@@ -93,6 +93,13 @@ def knn():
     cm = confusion_matrix(y_test, y_pred)
     print("Matriz de confusión:")
     print(cm)
+    etiquetas = ["simuladas", "no simuladas"]
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=etiquetas)
+
+    # Mostramos la matriz
+    disp.plot(cmap=plt.cm.Blues)
+    plt.title(f"Matriz de confusión")
+    plt.show()
 
 # Uso del modelo ya entrenado
 def usar_modelo():

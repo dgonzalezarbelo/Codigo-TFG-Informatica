@@ -395,3 +395,35 @@ def obtener_mejores_aleatorias(ini, fin):
 def obtener_mejores_simuladas(ini, fin):
     pob_inicial = funciones_de_almacen_en_rango(ini, fin)
     genetico(ini, fin, pob_inicial, nombre=f"mejores_simuladas_{ini}-{fin}", mutacion=False)
+
+def compara_productividad_simuladas_pseudoaleatorias():
+    n_funciones = 10
+    simuladas = leer_fnds_por_puntuacion("experimentos/experimentos_n8/almacen_fnds.json")
+    xSim, ySim, xPseudo, yPseudo = [], [], [], []
+    for i in range(n_funciones):
+        print(f"Iteración {i + 1}")
+        p1 = random.randint(25, 250)
+        p2 = random.randint(25, 250)
+        fSim1 = random.choice(simuladas[p1])
+        fSim2 = random.choice(simuladas[p2])
+        fPseudo1 = genera_pseudoaleatoria_puntuacion(p1)
+        fPseudo2 = genera_pseudoaleatoria_puntuacion(p2)
+        fAndSim = combAND_with_not(fSim1, fSim2)
+        fAndPseudo = combAND_with_not(fPseudo1, fPseudo2)
+        mSim = m(fAndSim)
+        mPseudo = m(fAndPseudo)
+        xSim.append(p1); xSim.append(p2)
+        ySim.append(mSim); ySim.append(mSim)
+        xPseudo.append(p1); xPseudo.append(p2)
+        yPseudo.append(mPseudo); yPseudo.append(mPseudo)
+    
+    fig = plt.figure(figsize = (8,5))
+    #plt.xlim([0,420])
+    plt.plot(xSim, ySim, 'ro', alpha = 0.5, label = "Simuladas")
+    plt.plot(xPseudo, yPseudo, 'bo', alpha = 0.5, label = "Pseudoaleatorias")
+    title = "Incremento de funciones simuladas y pseudoaleatorias"
+    plt.title(title)
+    plt.legend()
+    plt.xlabel("$\mu_x(f)$")
+    plt.ylabel("$\mu_x(f)$")
+    plt.show()
