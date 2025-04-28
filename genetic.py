@@ -373,14 +373,19 @@ def grafica_perdidas(funciones):
     plt.show()
 
 def genera_aleatorias():
-    num_funciones = 10000
+    num_funciones = 1000
     funciones = [[] for _ in range(M_CLIQUE + 1)]
-    for i in range(num_funciones):
-        if i > 0 and i % 1000 == 0:
-            debug(f"{i} funciones aleatorias generadas")
+    for i in range(1, num_funciones + 1):
+        m_f = 0
+        while m_f < 200:
+            f = genera_funcion_aleatoria()
+            m_f = m(f)
+        print(f"Función con puntuación {m_f} generada")
         f = genera_funcion_aleatoria()
         m_f = m(f)
         funciones[m_f].append([f, 0])   # TODO Lo del 0 es una cutrada pero es que tengo todo con lo de las puertas
+        if i % 1000 == 0:
+            debug(f"{i} funciones aleatorias generadas")
     guardar_funciones("experimentos/experimentos_n8/aleatorias_temp.json", funciones)
     almacena_fnds("experimentos/experimentos_n8/aleatorias_temp.json", "experimentos/experimentos_n8/almacen_aleatorias.json")
 

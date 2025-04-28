@@ -111,7 +111,7 @@ def main():
     # almacena_fnds("experimentos/experimentos_n8/Simulacion_300_iteraciones_reducidas/funciones_fnd.json", "experimentos/experimentos_n8/almacen_fnds.json")
     # almacena_fnds("experimentos/2025-04-15_18-11-26/funciones_fnd.json", "experimentos/experimentos_n8/almacen_fnds.json")
 
-    # genera_aleatorias()
+    genera_aleatorias()
     # compara_solapamiento()
     # compara_homogeneidad()
     # compara_grados_libertad()
