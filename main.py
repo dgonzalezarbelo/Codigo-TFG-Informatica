@@ -143,6 +143,7 @@ def main():
     # variacion_homogeneidad()
     # variacion_grados_libertad()
 
-    # almacena_fnds("experimentos/experimentos_n8/aleatorias_temp.json", "experimentos/experimentos_n8/almacen_aleatorias.json")
+    # compare_rand_fun()
+    compara_productividad_simuladas_pseudoaleatorias()
 
 main()

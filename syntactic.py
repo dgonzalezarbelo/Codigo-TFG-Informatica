@@ -60,7 +60,6 @@ clique = generate_fun_clique(subsets)
 
 
 # Calcula cuántos literales de f están en g
-# TODO No sé si es relevante pero igual esto se puede hcaer más rápido si los inputs vienen ordenados
 def common_literals(f, g) :
     res = 0
     for i in f :
@@ -269,7 +268,7 @@ def combAND_with_not(f, g) :
 
 # Compara funciones aleatorias
 def compare_rand_fun() :
-    iter = 100
+    iter = 10000
     fig = plt.figure(figsize = (8,5))
     x = []
     y = []
