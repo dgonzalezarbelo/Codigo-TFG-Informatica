@@ -72,9 +72,12 @@ def grafica_variacion_intrasolapamiento(n_funciones):
 def compara_solapamiento():
     n_funciones = 1000
     ini, fin = 1, 250
-    simuladas = poblacion_en_rango(ini, fin, n_funciones)
-    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
-    aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    puntuaciones = [random.randint(ini, fin) for _ in range(n_funciones)]
+    simuladas = funciones_almacen_por_puntuacion(puntuaciones)
+    # simuladas = poblacion_en_rango(ini, fin, n_funciones)
+    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(p) for p in puntuaciones]
+    aleatorias = funciones_almacen_por_puntuacion(puntuaciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    # aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
     dic = {}
     dic["simuladas"] = simuladas
     dic["pseudoaleatorias"] = pseudoaleatorias

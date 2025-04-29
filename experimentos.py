@@ -218,7 +218,7 @@ def leer_top_funciones(ruta, n_funciones):
 def funciones_de_almacen_en_rango(ini, fin, ruta_almacen = "experimentos/experimentos_n8/almacen_fnds.json"):
     almacen = leer_fnds_por_puntuacion(ruta_almacen)
     funciones = []
-    for punt in range(ini, fin):
+    for punt in range(ini, min(fin, len(almacen) - 1) + 1):
         funciones += almacen[punt]
     return funciones
 
@@ -227,6 +227,14 @@ def poblacion_en_rango(ini, fin, n_funciones, ruta_almacen = "experimentos/exper
     ret = []
     for _ in range(n_funciones):
         ret.append(random.choice(todas))
+    return ret
+
+def funciones_almacen_por_puntuacion(puntuaciones, ruta_almacen = "experimentos/experimentos_n8/almacen_fnds.json"):
+    almacen = leer_fnds_por_puntuacion(ruta_almacen)
+    ret = []
+    for p in puntuaciones:
+        if p < len(almacen) and len(almacen[p]) > 0:
+            ret.append(random.choice(almacen[p]))
     return ret
 
 def almacena_fnds(ruta_nuevas, ruta_almacen):
@@ -247,7 +255,7 @@ def almacena_fnds(ruta_nuevas, ruta_almacen):
     max_punt = len(nuevas) - 1
     while len(almacen) <= max_punt:
         almacen.append([])
-    for punt in range(max_punt):
+    for punt in range(max_punt + 1):
         for f in nuevas[punt]:
             if len(f) == 0:
                 continue

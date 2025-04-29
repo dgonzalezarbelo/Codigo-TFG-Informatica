@@ -30,10 +30,18 @@ def main():
     # simulate_circuit_with_not()
     # compare_rand_fun_with_not()
 
-    # f = genera_pseudoaleatoria_puntuacion(300)
-    # g = genera_pseudoaleatoria_puntuacion(300)
-    # print(m(combAND_with_not(f, g)))
+    # for _ in range(20):
+    #     f = genera_pseudoaleatoria_puntuacion(100)
+    #     g = genera_pseudoaleatoria_puntuacion(100)
+    #     fandg = combAND_with_not(f, g)
+    #     print(m(fandg), len(fandg))
 
+    # for _ in range(20):
+    #     [f] = poblacion_en_rango(50, 100, 1, "experimentos/experimentos_n8/almacen_fnds.json")
+    #     [g] = poblacion_en_rango(50, 100, 1, "experimentos/experimentos_n8/almacen_fnds.json")
+    #     fandg = combAND_with_not(f, g)
+    #     print(m(fandg), len(fandg))
+    
     # grafica_sesgo(leer_fnds_por_puntuacion("experimentos/experimentos_n8/almacen_fnds.json"))
 
     # aleatorias = [[] for _ in range(420)]
@@ -111,15 +119,15 @@ def main():
     # almacena_fnds("experimentos/experimentos_n8/Simulacion_300_iteraciones_reducidas/funciones_fnd.json", "experimentos/experimentos_n8/almacen_fnds.json")
     # almacena_fnds("experimentos/2025-04-15_18-11-26/funciones_fnd.json", "experimentos/experimentos_n8/almacen_fnds.json")
 
-    genera_aleatorias()
+    # genera_aleatorias()
     # compara_solapamiento()
     # compara_homogeneidad()
     # compara_grados_libertad()
 
     # histograma_grados_libertad()
 
-    # genera_dataset_knn()
-    # knn()
+    genera_dataset_knn()
+    knn()
 
     # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Solapamiento/datos_Solapamiento.csv")
     # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_s(f)$", "Relación de la métrica sintáctica y el solapamiento")
@@ -134,5 +142,7 @@ def main():
     # variacion_solapamiento()
     # variacion_homogeneidad()
     # variacion_grados_libertad()
+
+    # almacena_fnds("experimentos/experimentos_n8/aleatorias_temp.json", "experimentos/experimentos_n8/almacen_aleatorias.json")
 
 main()

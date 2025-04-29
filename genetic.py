@@ -87,7 +87,7 @@ def genera_pseudoaleatoria_puntuacion(puntuacion):
                 cur.sort(key=abs)
                 fnd.append(cur)
 
-        fnd = reduce(fnd)
+        fnd = reduce_pyeda(fnd)
         if m(fnd) != puntuacion:
             fallo = True
 
@@ -381,8 +381,6 @@ def genera_aleatorias():
             f = genera_funcion_aleatoria()
             m_f = m(f)
         print(f"Función con puntuación {m_f} generada")
-        f = genera_funcion_aleatoria()
-        m_f = m(f)
         funciones[m_f].append([f, 0])   # TODO Lo del 0 es una cutrada pero es que tengo todo con lo de las puertas
         if i % 1000 == 0:
             debug(f"{i} funciones aleatorias generadas")

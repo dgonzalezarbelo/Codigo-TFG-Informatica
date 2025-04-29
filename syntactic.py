@@ -234,7 +234,7 @@ def get_rand_fun_with_not() :
 # Genera una función realmente aleatoria
 def genera_funcion_aleatoria():
     '''Genera una función totalmente aleatoria'''
-    n_clausulas = random.randint(50, CLAUSULAS)
+    n_clausulas = random.randint(30, CLAUSULAS)
     fnd = []
     inputs = [i for i in range(1, A + 1)]
     for i in range(n_clausulas):
@@ -245,7 +245,7 @@ def genera_funcion_aleatoria():
         for i in literales_negar:
             literales[i] *= -1
         fnd.append(literales)
-    return reduce(fnd)
+    return reduce_pyeda(fnd)
 
 # AND con NOT
 def combAND_with_not(f, g) :
