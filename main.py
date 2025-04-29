@@ -126,8 +126,8 @@ def main():
 
     # histograma_grados_libertad()
 
-    genera_dataset_knn()
-    knn()
+    # genera_dataset_knn()
+    # knn()
 
     # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Solapamiento/datos_Solapamiento.csv")
     # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_s(f)$", "Relación de la métrica sintáctica y el solapamiento")
@@ -143,7 +143,7 @@ def main():
     # variacion_homogeneidad()
     # variacion_grados_libertad()
 
-    # compare_rand_fun()
-    compara_productividad_simuladas_pseudoaleatorias()
+    compare_rand_fun()
+    # compara_productividad_simuladas_pseudoaleatorias()
 
 main()

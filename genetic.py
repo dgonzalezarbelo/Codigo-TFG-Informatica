@@ -400,7 +400,7 @@ def obtener_mejores_simuladas(ini, fin):
     genetico(ini, fin, pob_inicial, nombre=f"mejores_simuladas_{ini}-{fin}", mutacion=False)
 
 def compara_productividad_simuladas_pseudoaleatorias():
-    n_funciones = 10
+    n_funciones = 300
     simuladas = leer_fnds_por_puntuacion("experimentos/experimentos_n8/almacen_fnds.json")
     xSim, ySim, xPseudo, yPseudo = [], [], [], []
     for i in range(n_funciones):
