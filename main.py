@@ -11,6 +11,7 @@ from metricas.perdidas import *
 from metricas.clausulas_perfectas import *
 from kNN.knn import *
 import time
+import csv
 
 # Función a la que llamar para hacer lo que quiera
 def main():
@@ -129,13 +130,29 @@ def main():
     # genera_dataset_knn()
     # knn()
 
+    # # Leer y modificar el CSV
+    # with open("metricas/graficas/comparaciones_Solapamiento/datos_Solapamiento.csv", 'r', newline='') as infile:
+    #     reader = csv.reader(infile)
+    #     header = next(reader)  # Guardar cabecera
+    #     rows = []
+    #     for row in reader:
+    #         row[2] = str(float(row[2]) * 2)  # Multiplica valor2 por 2
+    #         rows.append(row)
+
+    # # Escribir el archivo modificado
+    # with open("metricas/graficas/comparaciones_Solapamiento/datos_Solapamiento.csv", 'w', newline='') as outfile:
+    #     writer = csv.writer(outfile)
+    #     writer.writerow(header)
+    #     writer.writerows(rows)
+
+
     # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Solapamiento/datos_Solapamiento.csv")
     # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_s(f)$", "Relación de la métrica sintáctica y el solapamiento")
     # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_s$ para funciones pseudoaleatorias y simuladas", 0.5)
     # matriz_confusion_umbral_solapamiento(dic)
 
-    # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Homogeneidad/datos_Homogeneidad.csv")
-    # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_h(f)$", "Relación de la métrica sintáctica y la homogeneidad")
+    dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Homogeneidad/datos_Homogeneidad.csv")
+    generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_h(f)$", "Relación de la métrica sintáctica y la homogeneidad")
     # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_h$ para funciones pseudoaleatorias y simuladas", 0.5)
     # matriz_confusion_umbral_solapamiento(dic)
 
@@ -143,7 +160,7 @@ def main():
     # variacion_homogeneidad()
     # variacion_grados_libertad()
 
-    compare_rand_fun()
+    # compare_rand_fun()
     # compara_productividad_simuladas_pseudoaleatorias()
 
 main()

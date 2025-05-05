@@ -75,8 +75,8 @@ def compara_solapamiento():
     puntuaciones = [random.randint(ini, fin) for _ in range(n_funciones)]
     simuladas = funciones_almacen_por_puntuacion(puntuaciones)
     # simuladas = poblacion_en_rango(ini, fin, n_funciones)
-    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(p) for p in puntuaciones]
     aleatorias = funciones_almacen_por_puntuacion(puntuaciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(p) for p in puntuaciones]
     # aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
     dic = {}
     dic["simuladas"] = simuladas

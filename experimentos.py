@@ -632,14 +632,19 @@ def generar_grafica_desde_diccionario(diccionario, ejeX, ejeY, titulo):
     simuladas_min = defaultdict(list)  # Para los valores mínimos de simuladas
     pseudoaleatorias_max = defaultdict(list)  # Para los valores máximos de pseudoaleatorias
 
+    maximos, minimos = {}, {}
+
     # Recorrer el diccionario y dibujar los puntos
     for tipo, puntos in diccionario.items():
+        maximos[tipo], minimos[tipo] = float('-inf'), float('inf')
         if tipo not in tipos_a_graficar:
             continue
 
         puntos = list(filter(lambda x : x[0] > 25, puntos))
         x_vals = [punto[0] for punto in puntos]  # Extraemos los valores de X
         y_vals = [punto[1] for punto in puntos]  # Extraemos los valores de Y
+        maximos[tipo] = max(y_vals)
+        minimos[tipo] = min(y_vals)
 
         # Dibujar los puntos con el color correspondiente
         ax.scatter(x_vals, y_vals, color=colores.get(tipo, "black"), label=tipo, alpha=0.6)
@@ -669,6 +674,15 @@ def generar_grafica_desde_diccionario(diccionario, ejeX, ejeY, titulo):
     # Añadir la leyenda
     ax.legend()
 
+    texto_info = ""
+    for tipo in diccionario.keys():
+        texto_info += f"{len(diccionario[tipo])} funciones {tipo}: Máx = {maximos[tipo]:.4f}, Mín = {minimos[tipo]:.4f}\n"
+
+    ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
+
+    
+    plt.subplots_adjust(bottom=0.25)
+    ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
     # Mostrar la gráfica
     plt.show()
 
