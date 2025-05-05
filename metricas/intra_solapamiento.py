@@ -14,7 +14,7 @@ def solapamiento(f):
     for i in range(n):
         for j in range(i + 1, n):
             sum += common_literals(f[i], f[j]) / max(len(f[i]), len(f[j]))
-    return sum / (n * (n - 1))
+    return 2 * sum / (n * (n - 1))
 
 def formula_solapamiento_clique():
     sumatorio = sum([math.comb(x, 2) * math.comb(K, x) * math.comb(N - K, K - x) for x in range(2, K + 1)])
@@ -69,15 +69,7 @@ def grafica_variacion_intrasolapamiento(n_funciones):
     parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
     grafica_variacion_medida(parejas, m, solapamiento, combAND_with_not, combOR, "Solapamiento")
 
-def compara_solapamiento():
-    n_funciones = 1000
-    ini, fin = 1, 250
-    puntuaciones = [random.randint(ini, fin) for _ in range(n_funciones)]
-    simuladas = funciones_almacen_por_puntuacion(puntuaciones)
-    # simuladas = poblacion_en_rango(ini, fin, n_funciones)
-    aleatorias = funciones_almacen_por_puntuacion(puntuaciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
-    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(p) for p in puntuaciones]
-    # aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+def compara_solapamiento(simuladas, pseudoaleatorias, aleatorias):
     dic = {}
     dic["simuladas"] = simuladas
     dic["pseudoaleatorias"] = pseudoaleatorias

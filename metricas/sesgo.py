@@ -253,15 +253,7 @@ def grafica_variacion_sesgo_medio(n_funciones):
     parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
     grafica_variacion_medida(parejas, m, sesgo_medio, combAND_with_not, combOR, "Sesgo medio")
 
-def compara_grados_libertad():
-    n_funciones = 1000
-    ini, fin = 1, 250
-    puntuaciones = [random.randint(ini, fin) for _ in range(n_funciones)]
-    simuladas = funciones_almacen_por_puntuacion(puntuaciones)
-    # simuladas = poblacion_en_rango(ini, fin, n_funciones)
-    pseudoaleatorias = [genera_pseudoaleatoria_puntuacion(random.randint(ini, fin)) for _ in range(n_funciones)]
-    aleatorias = funciones_almacen_por_puntuacion(puntuaciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
-    # aleatorias = poblacion_en_rango(ini, fin, n_funciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+def compara_grados_libertad(simuladas, pseudoaleatorias, aleatorias):
     dic = {}
     dic["simuladas"] = simuladas
     dic["pseudoaleatorias"] = pseudoaleatorias

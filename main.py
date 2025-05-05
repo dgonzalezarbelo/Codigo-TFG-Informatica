@@ -121,9 +121,18 @@ def main():
     # almacena_fnds("experimentos/2025-04-15_18-11-26/funciones_fnd.json", "experimentos/experimentos_n8/almacen_fnds.json")
 
     # genera_aleatorias()
-    # compara_solapamiento()
-    # compara_homogeneidad()
-    # compara_grados_libertad()
+    # n_funciones = 1000
+    # ini, fin = 1, 250
+    # puntuaciones = [random.randint(ini, fin) for _ in range(n_funciones)]
+    # pseudoaleatorias = []
+    # for i, p in enumerate(puntuaciones):
+    #     pseudoaleatorias.append(genera_pseudoaleatoria_puntuacion(p))
+    #     print(f"{i} funciones pseudoaleatorias generadas")
+    # simuladas = funciones_almacen_por_puntuacion(puntuaciones)
+    # aleatorias = funciones_almacen_por_puntuacion(puntuaciones, "experimentos/experimentos_n8/almacen_aleatorias.json")
+    # compara_solapamiento(simuladas, pseudoaleatorias, aleatorias)
+    # compara_homogeneidad(simuladas, pseudoaleatorias, aleatorias)
+    # compara_grados_libertad(simuladas, pseudoaleatorias, aleatorias)
 
     # histograma_grados_libertad()
 
@@ -136,7 +145,7 @@ def main():
     #     header = next(reader)  # Guardar cabecera
     #     rows = []
     #     for row in reader:
-    #         row[2] = str(float(row[2]) * 2)  # Multiplica valor2 por 2
+    #         row[2] = str(float(row[2]) / 2)  # Multiplica valor2 por 2
     #         rows.append(row)
 
     # # Escribir el archivo modificado
@@ -148,13 +157,16 @@ def main():
 
     # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Solapamiento/datos_Solapamiento.csv")
     # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_s(f)$", "Relación de la métrica sintáctica y el solapamiento")
-    # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_s$ para funciones pseudoaleatorias y simuladas", 0.5)
+    # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_s$ para funciones pseudoaleatorias y simuladas", 1.0)
     # matriz_confusion_umbral_solapamiento(dic)
 
     dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Homogeneidad/datos_Homogeneidad.csv")
     generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_h(f)$", "Relación de la métrica sintáctica y la homogeneidad")
-    # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_h$ para funciones pseudoaleatorias y simuladas", 0.5)
+    # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_h$ para funciones pseudoaleatorias y simuladas", 1000000)
     # matriz_confusion_umbral_solapamiento(dic)
+
+    # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Grados de libertad/datos_Grados de libertad.csv")
+    # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\mu_{\\delta}(f)$", "Relación de la métrica sintáctica y la homogeneidad")
 
     # variacion_solapamiento()
     # variacion_homogeneidad()

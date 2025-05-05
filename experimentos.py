@@ -233,8 +233,9 @@ def funciones_almacen_por_puntuacion(puntuaciones, ruta_almacen = "experimentos/
     almacen = leer_fnds_por_puntuacion(ruta_almacen)
     ret = []
     for p in puntuaciones:
-        if p < len(almacen) and len(almacen[p]) > 0:
-            ret.append(random.choice(almacen[p]))
+        while p >= len(almacen) or len(almacen[p]) == 0:    # Por si no hay ninguna función con esa puntuación
+            p -= 1
+        ret.append(random.choice(almacen[p]))
     return ret
 
 def almacena_fnds(ruta_nuevas, ruta_almacen):
@@ -417,7 +418,7 @@ def grafica_comparaciones(conjuntos_de_funciones, metrica, medida, nombre):
         writer.writerows(all_data)
     print(f"Datos guardados en: {ruta_csv}")
 
-    plt.show()
+    # plt.show()
 
 def grafica_histograma(conjuntos_de_funciones, medida, nombre, valor_maximo):
     '''
@@ -627,6 +628,7 @@ def generar_grafica_desde_diccionario(diccionario, ejeX, ejeY, titulo):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     tipos_a_graficar = ["simuladas", "pseudoaleatorias", "aleatorias"]
+    # tipos_a_graficar = ["simuladas", "pseudoaleatorias"]
 
     # Diccionarios para almacenar los valores mínimos y máximos por x
     simuladas_min = defaultdict(list)  # Para los valores mínimos de simuladas
@@ -675,12 +677,9 @@ def generar_grafica_desde_diccionario(diccionario, ejeX, ejeY, titulo):
     ax.legend()
 
     texto_info = ""
-    for tipo in diccionario.keys():
+    for tipo in tipos_a_graficar:
         texto_info += f"{len(diccionario[tipo])} funciones {tipo}: Máx = {maximos[tipo]:.4f}, Mín = {minimos[tipo]:.4f}\n"
 
-    ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
-
-    
     plt.subplots_adjust(bottom=0.25)
     ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
     # Mostrar la gráfica
@@ -712,9 +711,11 @@ def generar_histograma_desde_diccionario(diccionario, ejeX, titulo, valor_maximo
     tipos_a_graficar = ["simuladas", "pseudoaleatorias"]
 
     x_min = 25
+    maximos, minimos = {}, {}
 
     # Recorremos el diccionario con los puntos
     for tipo, puntos in diccionario.items():
+        maximos[tipo], minimos[tipo] = float('-inf'), float('inf')
         if tipo not in tipos_a_graficar:
             continue
 
@@ -722,6 +723,8 @@ def generar_histograma_desde_diccionario(diccionario, ejeX, titulo, valor_maximo
         puntos = list(filter(lambda x : x[0] > x_min, puntos))
         x_vals = [punto[0] for punto in puntos]
         y_vals = [punto[1] for punto in puntos]
+        maximos[tipo] = max(y_vals)
+        minimos[tipo] = min(y_vals)
 
         # Dibujamos el histograma de las coordenadas x y en el gráfico
         # ax.hist(x_vals, bins=bins, alpha=0.5, 
@@ -731,6 +734,13 @@ def generar_histograma_desde_diccionario(diccionario, ejeX, titulo, valor_maximo
                 color=colores[i_color % len(colores)], 
                 label=f"{tipo}", edgecolor='black', align='mid')
         i_color += 1
+
+    texto_info = ""
+    for tipo in tipos_a_graficar:
+        texto_info += f"{len(diccionario[tipo])} funciones {tipo}: Máx = {maximos[tipo]:.4f}, Mín = {minimos[tipo]:.4f}\n"
+
+    plt.subplots_adjust(bottom=0.25)
+    ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)    
 
     # Configuración de la gráfica
     plt.title(titulo)

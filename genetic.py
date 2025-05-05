@@ -377,7 +377,7 @@ def genera_aleatorias():
     funciones = [[] for _ in range(M_CLIQUE + 1)]
     for i in range(1, num_funciones + 1):
         m_f = 0
-        while m_f < 200:
+        while m_f < 150:
             f = genera_funcion_aleatoria()
             m_f = m(f)
         print(f"Función con puntuación {m_f} generada")
