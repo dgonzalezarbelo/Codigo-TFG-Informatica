@@ -160,13 +160,13 @@ def main():
     # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_s$ para funciones pseudoaleatorias y simuladas", 1.0)
     # matriz_confusion_umbral_solapamiento(dic)
 
-    dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Homogeneidad/datos_Homogeneidad.csv")
-    generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_h(f)$", "Relación de la métrica sintáctica y la homogeneidad")
+    # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Homogeneidad/datos_Homogeneidad.csv")
+    # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\eta_h(f)$", "Relación de la métrica sintáctica y la homogeneidad")
     # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_h$ para funciones pseudoaleatorias y simuladas", 1000000)
     # matriz_confusion_umbral_solapamiento(dic)
 
-    # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Grados de libertad/datos_Grados de libertad.csv")
-    # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\mu_{\\delta}(f)$", "Relación de la métrica sintáctica y la homogeneidad")
+    dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Grados de libertad/datos_Grados de libertad.csv")
+    generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\mu_{\\delta}(f)$", "Relación de la métrica sintáctica y la homogeneidad")
 
     # variacion_solapamiento()
     # variacion_homogeneidad()
