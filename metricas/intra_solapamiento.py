@@ -76,7 +76,7 @@ def compara_solapamiento(simuladas, pseudoaleatorias, aleatorias):
     dic["aleatorias"] = aleatorias
     grafica_comparaciones(dic, m, solapamiento, "Solapamiento")
 
-def matriz_confusion_umbral_solapamiento(diccionario, umbral=0.1):
+def matriz_confusion_umbral_solapamiento(diccionario, umbral=0.2):
     """
     Predice el tipo de cada punto en función de su coordenada Y y muestra la matriz de confusión.
 
@@ -86,7 +86,7 @@ def matriz_confusion_umbral_solapamiento(diccionario, umbral=0.1):
             Los valores son listas de tuplas con coordenadas (x, y, ...).
         umbral: float
             Umbral de la coordenada Y para decidir la predicción.
-            Por defecto es 0.1.
+            Por defecto es 0.2.
     """
 
     # Nos centramos solo en simuladas y pseudoaleatorias
@@ -115,4 +115,4 @@ def matriz_confusion_umbral_solapamiento(diccionario, umbral=0.1):
     plt.show()
 
 def variacion_solapamiento():
-    grafica_variacion_medida(solapamiento, combAND_with_not, combOR, "Solapamiento", "$\\eta_h$")
+    grafica_variacion_medida(solapamiento, combAND_with_not, combOR, "Solapamiento", "$\\eta_s$")

@@ -70,4 +70,4 @@ def compara_homogeneidad(simuladas, pseudoaleatorias, aleatorias):
     grafica_comparaciones(dic, m, homogeneidad, "Homogeneidad")
 
 def variacion_homogeneidad():
-    grafica_variacion_medida(homogeneidad, combAND_with_not, combOR, "Homogeneidad", "$\\eta_s$")
+    grafica_variacion_medida(homogeneidad, combAND_with_not, combOR, "Homogeneidad", "$\\eta_h$")

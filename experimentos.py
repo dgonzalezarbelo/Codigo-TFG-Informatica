@@ -503,7 +503,7 @@ def grafica_variacion_medida(medida, combAND_with_not, combOR, nombre, simbolo):
 
     min_punt = 25
 
-    n_parejas = 10
+    n_parejas = 500
     for _ in range(n_parejas):
         ok = False
         while not ok:
