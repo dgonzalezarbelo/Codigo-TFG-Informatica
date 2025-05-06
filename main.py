@@ -165,13 +165,22 @@ def main():
     # generar_histograma_desde_diccionario(dic, "$\\eta_s(f)$", "Valores de $\\eta_h$ para funciones pseudoaleatorias y simuladas", 1000000)
     # matriz_confusion_umbral_solapamiento(dic)
 
-    dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Grados de libertad/datos_Grados de libertad.csv")
-    generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\mu_{\\delta}(f)$", "Relación de la métrica sintáctica y la homogeneidad")
+    # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/comparaciones_Grados de libertad/datos_Grados de libertad.csv")
+    # generar_grafica_desde_diccionario(dic, "$\\mu_x(f)$", "$\\mu_{\\delta}(f)$", "Relación de la métrica sintáctica y la homogeneidad")
 
     # variacion_solapamiento()
     # variacion_homogeneidad()
     # variacion_grados_libertad()
 
+    # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/Variacion_Solapamiento/valores_variacion_Solapamiento.csv")
+    # generar_variacion_desde_diccionario(dic, "$\\eta_s$ antes de puertas", "$\\eta_s$ después de puertas", "Variación de $\\eta_s$")
+
+    # dic = leer_csv_a_diccionario_generalizado("metricas/graficas/Variacion_Homogeneidad/valores_variacion_Homogeneidad.csv")
+    # generar_variacion_desde_diccionario(dic, "$\\eta_h$ antes de puertas", "$\\eta_h$ después de puertas", "Variación de $\\eta_h$")
+    
+    dic = leer_csv_a_diccionario_generalizado("metricas/graficas/Variacion_Grados de libertad/valores_variacion_Grados de libertad.csv")
+    generar_variacion_desde_diccionario(dic, "$\\mu_{\\delta}$ antes de puertas", "$\\mu_{\\delta}$ después de puertas", "Variación de $\\mu_{\\delta}$")
+    
     # compare_rand_fun()
     # compara_productividad_simuladas_pseudoaleatorias()
 

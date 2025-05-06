@@ -503,7 +503,7 @@ def grafica_variacion_medida(medida, combAND_with_not, combOR, nombre, simbolo):
 
     min_punt = 25
 
-    n_parejas = 1000
+    n_parejas = 10
     for _ in range(n_parejas):
         ok = False
         while not ok:
@@ -512,6 +512,8 @@ def grafica_variacion_medida(medida, combAND_with_not, combOR, nombre, simbolo):
             m_g = random.randint(min_punt, len(almacen) - 1)
             f = random.choice(almacen[m_f])[0]
             g = random.choice(almacen[m_g])[0]
+            med_f = medida(f)
+            med_g = medida(g)
             fAND = combAND_with_not(f, g)
             if len(fAND) > 150:
                 ok = False
@@ -522,40 +524,39 @@ def grafica_variacion_medida(medida, combAND_with_not, combOR, nombre, simbolo):
                 ok = False
             medOR = medida(fOR)
         # Añadir a listas para graficar
-        xAND.extend([medida(f), medida(g)])
+        xAND.extend([med_f, med_g])
         yAND.extend([medAND, medAND])
-        xOR.extend([medida(f), medida(g)])
+        xOR.extend([med_f, med_g])
         yOR.extend([medOR, medOR])
 
         # Añadir a datos para CSV
         datos_csv.extend([
-            [m_f, 'AND', medAND],
-            [m_g, 'AND', medAND],
-            [m_f, 'OR', medOR],
-            [m_g, 'OR', medOR],
+            ['AND', med_f, medAND],
+            ['AND', med_g, medAND],
+            ['OR', med_g, medOR],
+            ['OR', med_g, medOR],
         ])
 
-        min_AND = min(min_AND, medAND)
-        max_AND = max(max_AND, medAND)
-        min_OR = min(min_OR, medOR)
-        max_OR = max(max_OR, medOR)
+        min_AND = min(min_AND, medAND - med_f, medAND - med_g)
+        max_AND = max(max_AND, medAND - med_f, medAND - med_g)
+        min_OR = min(min_OR, medOR - med_f, medOR - med_g)
+        max_OR = max(max_OR, medOR - med_f, medOR - med_g)
 
         print(f"{len(xAND) // 2} puntos con cada puerta calculados")
-        # if (len(xAND) // 2) % 5 == 0:
 
     ax.plot(xAND, yAND, colores[0], alpha=0.5, label="Variación con AND")
     ax.plot(xOR, yOR, colores[1], alpha=0.5, label="Variación con OR")
 
     texto_info = (
         f"{n_parejas} parejas\n"
-        f"Variación AND: Máx = {max_AND:.4f}, Mín = {min_AND:.4f}\n"
-        f"Variación OR: Máx = {max_OR:.4f}, Mín = {min_OR:.4f}\n"
+        f"Variación con puerta AND: Máx = {max_AND:.4f}, Mín = {min_AND:.4f}\n"
+        f"Variación con puerta OR:  Máx = {max_OR:.4f}, Mín = {min_OR:.4f}\n"
     )
 
     plt.title(title)
     plt.legend()
-    plt.xlabel(f"{simbolo}")
-    plt.ylabel(f"{simbolo} tras puertas")
+    plt.xlabel(f"{simbolo} antes de puertas")
+    plt.ylabel(f"{simbolo} después de puertas")
     plt.subplots_adjust(bottom=0.25)
     ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
 
@@ -568,11 +569,11 @@ def grafica_variacion_medida(medida, combAND_with_not, combOR, nombre, simbolo):
     ruta_csv = os.path.join(carpeta_salida, f"valores_variacion_{nombre}.csv")
     with open(ruta_csv, mode='w', newline='') as archivo_csv:
         writer = csv.writer(archivo_csv)
-        writer.writerow(['metrica', 'tipo_operacion', 'variacion_medida'])  # Cabecera
+        writer.writerow(['puerta', 'medida_antes', 'medida_despues'])  # Cabecera
         writer.writerows(datos_csv)
     print(f"Datos de la variación guardados en: {ruta_csv}")
 
-    plt.show()
+    # plt.show()
 
 def leer_csv_a_diccionario_generalizado(nombre_archivo):
     """
@@ -747,4 +748,53 @@ def generar_histograma_desde_diccionario(diccionario, ejeX, titulo, valor_maximo
     plt.xlabel(ejeX)
     plt.ylabel("Número de funciones")
     plt.legend()
+    plt.show()
+
+def generar_variacion_desde_diccionario(diccionario, ejeX, ejeY, titulo):
+    # Definir los colores según el tipo
+    colores = {
+        "AND": "red",      # Rojo para "simuladas"
+        "OR": "blue"  # Azul para "pseudoaleatorias"
+    }
+
+    # Crear la figura y el eje para el gráfico
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    puertas_a_graficar = ["AND", "OR"]
+
+    # Diccionarios para almacenar los valores mínimos y máximos por x
+
+    var_max, var_min = {}, {}
+
+    # Recorrer el diccionario y dibujar los puntos
+    for puerta, puntos in diccionario.items():
+        var_max[puerta], var_min[puerta] = float('-inf'), float('inf')
+        if puerta not in puertas_a_graficar:
+            continue
+
+        x_vals = [punto[0] for punto in puntos]  # Extraemos los valores de X
+        y_vals = [punto[1] for punto in puntos]  # Extraemos los valores de Y
+        var_max[puerta] = max([y_vals[i] - x_vals[i] for i in range(len(puntos))])
+        var_min[puerta] = min([y_vals[i] - x_vals[i] for i in range(len(puntos))])
+
+        # Dibujar los puntos con el color correspondiente
+        ax.scatter(x_vals, y_vals, color=colores.get(puerta, "black"), label=puerta, alpha=0.6)
+
+    # Añadir título y etiquetas a los ejes
+    ax.set_title(titulo)
+    ax.set_xlabel(ejeX)
+    ax.set_ylabel(ejeY)
+    
+    # Añadir la leyenda
+    ax.legend()
+
+    texto_info = (
+        f"{len(diccionario["AND"])} parejas\n"
+        f"Variación con puerta AND: Máx = {var_max['AND']:.4f}, Mín = {var_min['AND']:.4f}\n"
+        f"Variación con puerta OR:  Máx = {var_max['OR']:.4f}, Mín = {var_min['OR']:.4f}\n"
+    )
+
+    plt.subplots_adjust(bottom=0.25)
+    ax.text(0.5, -0.35, texto_info, ha="center", fontsize=10, transform=ax.transAxes)
+    # Mostrar la gráfica
     plt.show()

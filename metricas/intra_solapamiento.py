@@ -115,4 +115,4 @@ def matriz_confusion_umbral_solapamiento(diccionario, umbral=0.1):
     plt.show()
 
 def variacion_solapamiento():
-    grafica_variacion_medida(solapamiento, combAND_with_not, combOR, "Solapamiento")
+    grafica_variacion_medida(solapamiento, combAND_with_not, combOR, "Solapamiento", "$\\eta_h$")
