@@ -1,6 +1,6 @@
 # Trabajo de fin de grado: Estudio de complejidad de circuitos para el problema CLIQUE
 
-Este repositorio contiene el código desarrollado para mi TFG de informática presentado en la Universidad Complutense de Madrid (curso 2024-2025).
+Este repositorio contiene el código desarrollado para mi TFG de Ingeniería Informática presentado en la Universidad Complutense de Madrid (curso 2024-2025).
 
 ## Resumen del TFG
 Este trabajo explora la complejidad computacional del problema CLIQUE desde la perspectiva de circuitos booleanos. Incluye una parte teórica basada en resultados clásicos sobre circuitos de profundidad constante y una parte experimental centrada en la métrica sintáctica. Se estudian distintas medidas para caracterizar funciones booleanas y se entrena un modelo de aprendizaje supervisado para clasificar funciones según su origen. El repositorio contiene el código para el análisis de medidas, la generación de datos y los experimentos de clasificación.
