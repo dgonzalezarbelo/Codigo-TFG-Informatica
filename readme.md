@@ -7,15 +7,25 @@ Este trabajo explora la complejidad computacional del problema CLIQUE desde la p
 
 ## Estructura del repositorio
 ├── experimentos/           # Datos usados y generados (FNDs, simulaciones, etc.)
+
 ├── kNN/                    # Código para el modelo de predicción con k-NN
+
 ├── medidas/                # Código referente al manejo de las medidas de solapamiento, homogeneidad y grados de libertad
+
 │   ├── grados_libertad.py  # Código para el estudio de la medida de grados de libertad
+
 │   ├── homogeneidad.py     # Código para el estudio de la medida de homogeneidad
+
 │   ├── solapamiento.py     # Código para el estudio de la medida de solapamiento
+
 │   └── graficas/           # Gráficas con las medidas anteriores
+
 ├── experimentos.py         # Funciones generales para el manejo de datos y generación de gráficas
+
 ├── genetic.py              # Algoritmo genético de parejas y otras funciones relevantes para su uso
+
 ├── hungarian.py            # Script con el algoritmo húngaro para el cálculo de la métrica sintáctica
+
 └── syntactic.py            # Archivo con funciones relacionadas con el cálculo de la métrica sintáctica
 
 ## Licencia
@@ -32,15 +42,25 @@ This project investigates the computational complexity of the CLIQUE problem fro
 
 ## Repository structure
 ├── experimentos/           # Data used and generated (DNFs, simulations, etc.)
+
 ├── kNN/                    # Code for the k-NN prediction model
+
 ├── medidas/                # Code for the overlap, homogeneity, and degrees of freedom measures
+
 │   ├── grados_libertad.py  # Code for the degrees of freedom measure
+
 │   ├── homogeneidad.py     # Code for the homogeneity measure
+
 │   ├── solapamiento.py     # Code for the overlap measure
+
 │   └── graficas/           # Graphs for the above measures
+
 ├── experimentos.py         # General functions for data handling and plotting
+
 ├── genetic.py              # Pair-genetic algorithm and supporting functions
+
 ├── hungarian.py            # Hungarian algorithm for computing the syntactic metric
+
 └── syntactic.py            # Functions related to the syntactic metric
 
 ## License
