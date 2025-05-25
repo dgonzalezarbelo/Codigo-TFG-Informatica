@@ -1,20 +1,24 @@
+# Este archivo se usa para todo tipo de experimentos a lo largo del estudio, para el manejo de datos y generación de gráficas, entre otras cosas
+
 import os
 import csv
 import json
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
-from debug import *
 import random
 from collections import defaultdict
 
 def guardar_funciones(ruta, funciones):
     '''
+    Guarda funciones resultantes del algoritmo genético.
     El formato del JSON es el siguiente:
     Lista de puntuaciones (de 0 a M_CLIQUE)
         Para cada lista se añaden todas las funciones computadas con dicha puntuación
             Para cada función se guarda una pareja (FND, p),
             donde FND es su forma normal disyuntiva y p es el número de puertas que ha hecho falta para computarla
+            (Las puertas realmente no se usan, pero la implementación de muchas funciones mantiene ese formato)
+    La función es básicamente un json.dump() pero hecho a mano para que las funciones se vean en una lista y que el archivo sea más fácilmente legible.
     '''
     if funciones == None:
         return
@@ -39,7 +43,10 @@ def guardar_funciones(ruta, funciones):
         f.write(json_text)
 
 def guardar_coordenadas(ruta, xAND, yAND, xOR, yOR):
-    # Guardar coordenadas en CSV
+    '''
+    Guarda las coordenadas resultantes del algoritmo genético.
+    Las coordenadas son los valores de la métrica sintáctica antes y después de las puertas lógicas.
+    '''
     if xAND != None and yAND != None:
         with open(os.path.join(ruta, "coordenadasAND.csv"), "w", newline="") as f:
             writer = csv.writer(f)
@@ -53,10 +60,13 @@ def guardar_coordenadas(ruta, xAND, yAND, xOR, yOR):
             writer.writerows([xOR, yOR])    
 
 def guardar_graficas(ruta, iter, xAND=None, yAND=None, xOR=None, yOR=None):
+    '''
+    Guarda las gráficas del algoritmo genético.
+    Hace una por cada puerta individual y, si se usan ambas, una conjunta.
+    '''
     if xAND != None and yAND != None:
         fig = plt.figure(figsize = (8,5))
         plt.plot(xAND, yAND, 'ro', alpha = 0.5, label = "Incremento con AND")
-        # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
         title = "Simulación tras " + str(iter) + " iteraciones"
         plt.title(title)
         plt.legend()
@@ -67,7 +77,6 @@ def guardar_graficas(ruta, iter, xAND=None, yAND=None, xOR=None, yOR=None):
 
     if xOR != None and yOR != None:
         fig = plt.figure(figsize = (8,5))
-        # plt.plot(xAND, yAND, 'ro', alpha = 0.5, label = "Incremento con AND")
         plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
         title = "Simulación tras " + str(iter) + " iteraciones"
         plt.title(title)
@@ -90,9 +99,15 @@ def guardar_graficas(ruta, iter, xAND=None, yAND=None, xOR=None, yOR=None):
         plt.close()
 
 def generar_nombre_experimento():
+    '''Genera un nombre por defecto para experimentos cualesquiera (fecha_hora)'''
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 def guardar_simulacion(nombre, punt_funciones, iter, xAND, yAND, xOR, yOR):
+    '''
+    Guarda toda la información relativa a una ejecución de algoritmo genético de simulación.
+    Se guardan as funciones generadas, valores de las gráficas y las gráficas en sí en una carpeta nueva.
+    Si no se le da un nombre a la ejecución se genera uno por defecto.
+    '''
     if nombre == None:
         nombre = generar_nombre_experimento()
     
@@ -106,7 +121,12 @@ def guardar_simulacion(nombre, punt_funciones, iter, xAND, yAND, xOR, yOR):
     guardar_graficas(ruta, iter, xAND, yAND, xOR, yOR)
 
 def guarda_genetico(nombre, poblaciones, puertas):
-    '''Función para guardar los mejores pares de funciones por cada puerta utilizada'''
+    '''
+    Guarda toda la información relativa a una ejecución de algoritmo genético de parejas.
+    Se guardan las mejores parejas con el siguiente formato: ((f1, p1), (f2, p2), incremento), donde f1 y f2 son las puertas que se juntan,
+    p1 y p2 son las puntuaciones de f1 y f2 e incremento es el valor que se gana de puntuación al juntar f1 y f2.
+    Si no se le da un nombre a la ejecución se genera uno por defecto.
+    '''
     if nombre == None:
         nombre = generar_nombre_experimento()
     for p in puertas:
@@ -126,6 +146,7 @@ def guarda_genetico(nombre, poblaciones, puertas):
             f.write(json_text)
 
 def grafica_genetico(poblaciones, puertas):
+    '''Genera una gráfica con el resultado del algoritmo genético de parejas'''
     colores = {"AND": 'ro', "OR": 'bo'}
     fig = plt.figure(figsize = (8,5))
     for p in puertas:
@@ -146,7 +167,7 @@ def grafica_genetico(poblaciones, puertas):
 def leer_json_funciones(ruta):
     '''
     Lee un JSON donde tenemos listas de funciones (parejas FND-puertas) agrupadas por puntuaciones
-    (las funciones le la lista n tienen puntuación n)
+    (las funciones de la n-ésima lista tienen puntuación n).
     Si el archivo está vacío o no tiene datos válidos, devuelve una lista vacía
     '''
     if not os.path.exists(ruta) or os.stat(ruta).st_size == 0:
@@ -170,6 +191,7 @@ def leer_json_funciones(ruta):
     return ret
 
 def leer_fnds_por_puntuacion(ruta):
+    '''Lee las funciones almacenadas en la ruta, sin el argumento adicional de las puertas'''
     funciones = leer_json_funciones(ruta)
     ret = []
     for lista in funciones:
@@ -177,15 +199,10 @@ def leer_fnds_por_puntuacion(ruta):
         for f in lista:
             fnds.append(f[0])   # La primera componente de cada item es la FND, la segunda es el número de puertas
         ret.append(fnds)
-    
     return ret
 
 def leer_json_parejas(ruta):
-    # '''
-    # Lee un JSON donde tenemos listas de funciones (parejas FND-puertas) agrupadas por puntuaciones
-    # (las funciones le la lista n tienen puntuación n)
-    # Si el archivo está vacío o no tiene datos válidos, devuelve una lista vacía
-    # '''
+    '''Lee el contenido de un archivo de parejas de funciones (formato ((f1, p1), (f2, p2), incremento))'''
     if not os.path.exists(ruta) or os.stat(ruta).st_size == 0:
         return []
     
@@ -194,11 +211,10 @@ def leer_json_parejas(ruta):
             data = json.load(f)
     except json.JSONDecodeError:
         return []   # En caso de que el JSON esté vacío o mal formado
-    
     return data
 
 def leer_top_parejas(ruta, n_parejas):
-    '''Función para leer las mejores n_parejas parejas obtenidas con algoritmo genético de parejas'''
+    '''Lee las mejores n_parejas parejas obtenidas con algoritmo genético de parejas'''
     parejas = leer_json_parejas(ruta)
     ret = []
     for i in range(min(n_parejas, len(parejas))):
@@ -206,7 +222,7 @@ def leer_top_parejas(ruta, n_parejas):
     return ret
 
 def leer_top_funciones(ruta, n_funciones):
-    '''Función para leer las mejores n_funciones funciones obtenidas con algoritmo genético de parejas'''
+    '''Lee las mejores n_funciones funciones obtenidas con algoritmo genético de parejas'''
     datos = leer_json_parejas(ruta)
     funciones = []
     for i in range(0, min(n_funciones, len(datos)) // 2):
@@ -216,6 +232,10 @@ def leer_top_funciones(ruta, n_funciones):
     return funciones
 
 def funciones_de_almacen_en_rango(ini, fin, ruta_almacen = "experimentos/experimentos_n8/almacen_fnds.json"):
+    '''
+    Devuelve todas las funciones con puntuaciones en rango [ini, fin] en el archivo indicado.
+    Se devuelve una lista donde el índice es la puntuación de todas las funciones en la lista en dicha posición
+    '''
     almacen = leer_fnds_por_puntuacion(ruta_almacen)
     funciones = []
     for punt in range(ini, min(fin, len(almacen) - 1) + 1):
@@ -223,6 +243,7 @@ def funciones_de_almacen_en_rango(ini, fin, ruta_almacen = "experimentos/experim
     return funciones
 
 def poblacion_en_rango(ini, fin, n_funciones, ruta_almacen = "experimentos/experimentos_n8/almacen_fnds.json"):
+    '''Devuelve una población inicial de n_funciones funciones de la ruta indicada cuyas puntuaciones están en el rango [ini, fin]'''
     todas = funciones_de_almacen_en_rango(ini, fin, ruta_almacen)
     ret = []
     for _ in range(n_funciones):
@@ -230,6 +251,10 @@ def poblacion_en_rango(ini, fin, n_funciones, ruta_almacen = "experimentos/exper
     return ret
 
 def funciones_almacen_por_puntuacion(puntuaciones, ruta_almacen = "experimentos/experimentos_n8/almacen_fnds.json"):
+    '''
+    Devuelve una lista de funciones de la ruta indicada donde la puntuación de cada una viene indicada en el argumento puntuaciones.
+    puntuaciones es una lista de enteros, donde cada uno refleja el valor de la métrica de la función que se espera
+    '''
     almacen = leer_fnds_por_puntuacion(ruta_almacen)
     ret = []
     for p in puntuaciones:
@@ -240,10 +265,9 @@ def funciones_almacen_por_puntuacion(puntuaciones, ruta_almacen = "experimentos/
 
 def almacena_fnds(ruta_nuevas, ruta_almacen):
     '''
-    Función para almacenar en ruta_almacen todas las FNDs provenientes de ruta_nuevas.
+    Almacena en ruta_almacen todas las FNDs provenientes de ruta_nuevas.
     Para cada FND (acompañada del número de puertas usado para computarla),
-    se comprobará si ya estaba en ruta_almacen. En tal caso, se actualizará el número de puertas
-    si resulta ser menor al que ya se tenía
+    se comprobará si ya estaba en ruta_almacen. En tal caso, se actualizará el número de puertas si resulta ser menor al que ya se tenía
     '''
     almacen = leer_json_funciones(ruta_almacen)
     nuevas = leer_json_funciones(ruta_nuevas)
@@ -284,6 +308,7 @@ def almacena_fnds(ruta_nuevas, ruta_almacen):
     print(f"Nuevas funciones almacenadas: {new}")
 
 def filtrar_almacen_por_longitud(ruta_almacen="experimentos/experimentos_n8/almacen_fnds.json"):
+    '''Escanea un archivo de funciones, eliminando todas aquellas cuya longitud (número de cláusulas) sea mayor al indicado en LONG_MAXIMA'''
     almacen = leer_json_funciones(ruta_almacen)
     LONG_MAXIMA = 150
     nuevo_almacen = [[] for _ in range(len(almacen))]
@@ -297,58 +322,9 @@ def filtrar_almacen_por_longitud(ruta_almacen="experimentos/experimentos_n8/alma
         pass
     guardar_funciones(ruta_almacen, nuevo_almacen)
 
-def reducir_almacen(reduce, m, ruta_almacen="experimentos/experimentos_n8/almacen_fnds.json"):
-    almacen = leer_json_funciones(ruta_almacen)
-    nuevo_almacen = [[] for _ in range(len(almacen))]
-    count = 0
-    for punt in range(len(almacen)):
-        for [fnd, puertas] in almacen[punt]:
-            l = len(fnd)
-            fnd = reduce(fnd)
-            new_punt = m(fnd)
-            if len(fnd) < l or new_punt != punt:
-                count += 1
-            nuevo_almacen[new_punt].append([fnd, puertas])
-    # Borramos el contenido del archivo por ahora
-    with open(ruta_almacen, "w") as f:
-        pass
-    guardar_funciones(ruta_almacen, nuevo_almacen)
-    print(f"Había {count} funciones sin reducir")
-
-def grafica_puntuaciones_por_puertas(funciones):
-    '''
-    Función para graficar la puntuación máxima obtenida por número de puertas
-    El argumento es una lista de listas donde el índice indica la puntuación.
-    Dentro, cada sublista contiene listas de dos elementos
-        El primer elemento es una FND, y el segundo es el número de puertas necesitado para computarla
-    '''
-    # TODO No se deberían ver los puntos que realmente no existen
-
-    por_puertas = []
-    for punt, lista in enumerate(funciones):
-        for funcion in lista:
-            puertas = funcion[1]
-            if punt > 30 and puertas == 0:
-                debug(funcion)
-            while len(por_puertas) <= puertas:
-                por_puertas.append(0)
-            por_puertas[puertas] = max(por_puertas[puertas], punt)
-    
-    fig = plt.figure(figsize = (8,5))
-    plt.plot(range(len(por_puertas)), por_puertas, 'ro', alpha = 0.5)
-    # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
-    title = "Relación entre número de puertas y puntuación máxima"
-    plt.title(title)
-    # plt.legend()
-    plt.xlabel("Número de puertas")
-    plt.ylabel("Puntuación máxima")
-    # plt.savefig(os.path.join(ruta, "graficaAND.png"))
-    plt.show()
-    # plt.close()
-
 def grafica_comparaciones(conjuntos_de_funciones, metrica, medida, nombre):
     '''
-    Esta función genera una gráfica que compara valores de una medida para varios grupos de funciones.
+    Genera una gráfica que compara valores de una medida para varios grupos de funciones.
     Además guarda la gráfica como imagen y las coordenadas como archivo CSV.
 
     Parámetros:
@@ -482,8 +458,7 @@ def grafica_histograma(conjuntos_de_funciones, medida, nombre, valor_maximo):
 
 def grafica_variacion_medida(medida, combAND_with_not, combOR, nombre, simbolo):
     '''
-    Esta función sirve para hacer gráficas en las que se comparen los valores
-    de cierta medida para parejas de funciones antes y después de pasar por una puerta AND o OR.
+    H gráficas en las que se comparen los valores de cierta medida para parejas de funciones antes y después de pasar por una puerta AND o OR.
     También guarda los datos en un archivo CSV.
     '''
     carpeta_salida = f"metricas/graficas/variacion_{nombre}"
@@ -583,8 +558,7 @@ def leer_csv_a_diccionario_generalizado(nombre_archivo):
     nombre_archivo: str
         El nombre del archivo CSV a leer.
     
-    Retorna:
-    dict
+    Devuelve dict
         Un diccionario donde las claves son los tipos (e.g. "simuladas", "aleatorias", "pseudoaleatorias")
         y los valores son listas de tuplas con las coordenadas (x, y, z, ...).
     """
@@ -659,16 +633,6 @@ def generar_grafica_desde_diccionario(diccionario, ejeX, ejeY, titulo):
             elif tipo == "pseudoaleatorias":
                 pseudoaleatorias_max[x].append(y)  # Guardamos los valores de Y para pseudoaleatorias
 
-    # # Trazar los segmentos para las simuladas (mínimos por cada valor de x)
-    # simuladas_x = sorted(simuladas_min.keys())
-    # simuladas_y = [min(simuladas_min[x]) for x in simuladas_x]  # Tomamos el mínimo de cada grupo
-    # ax.plot(simuladas_x, simuladas_y, color='red', linestyle='-', marker='o', label="Puntos mínimos simuladas")
-
-    # # Trazar los segmentos para las pseudoaleatorias (máximos por cada valor de x)
-    # pseudoaleatorias_x = sorted(pseudoaleatorias_max.keys())
-    # pseudoaleatorias_y = [max(pseudoaleatorias_max[x]) for x in pseudoaleatorias_x]  # Tomamos el máximo de cada grupo
-    # ax.plot(pseudoaleatorias_x, pseudoaleatorias_y, color='blue', linestyle='-', marker='x', label="Puntos máximos pseudoaleatorias")
-
     # Añadir título y etiquetas a los ejes
     ax.set_title(titulo)
     ax.set_xlabel(ejeX)
@@ -728,9 +692,6 @@ def generar_histograma_desde_diccionario(diccionario, ejeX, titulo, valor_maximo
         minimos[tipo] = min(y_vals)
 
         # Dibujamos el histograma de las coordenadas x y en el gráfico
-        # ax.hist(x_vals, bins=bins, alpha=0.5, 
-        #         color=colores[i_color % len(colores)], 
-        #         label=f"Puntos {tipo} (X)", edgecolor='black', align='mid')
         ax.hist(y_vals, bins=bins, alpha=0.5, 
                 color=colores[i_color % len(colores)], 
                 label=f"{tipo}", edgecolor='black', align='mid')
@@ -751,6 +712,8 @@ def generar_histograma_desde_diccionario(diccionario, ejeX, titulo, valor_maximo
     plt.show()
 
 def generar_variacion_desde_diccionario(diccionario, ejeX, ejeY, titulo):
+    '''Genera una gráfica a partir de los valores de los argumentos'''
+    
     # Definir los colores según el tipo
     colores = {
         "AND": "red",      # Rojo para "simuladas"

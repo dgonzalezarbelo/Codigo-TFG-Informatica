@@ -1,15 +1,14 @@
 from syntactic import *
-from debug import debug
 from genetic import *
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 from experimentos import *
 
 def solapamiento(f):
-    '''Calcula la intersección promedio entre cláusulas de f'''
+    '''Función para calcular la medida de solapamiento de f'''
     sum = 0
     n = len(f)
-    if n <= 1: #FIXME Igual sería mejor lanzar una excepción en este caso, la precondición debería ser n >= 2
+    if n <= 1:
         return 0
     for i in range(n):
         for j in range(i + 1, n):
@@ -17,45 +16,13 @@ def solapamiento(f):
     return 2 * sum / (n * (n - 1))
 
 def formula_solapamiento_clique():
+    '''Calcula el solapamiento de la función que computa Clique en función de n y k'''
     sumatorio = sum([math.comb(x, 2) * math.comb(K, x) * math.comb(N - K, K - x) for x in range(2, K + 1)])
     return (sumatorio - math.comb(K, 2)) / (2 * (math.comb(N, K) - 1) * math.comb(K, 2))
 
-def grafica_sopalamiento_simuladas_vs_aleatorias():
-    max_funciones = 10000
-    almacen = leer_fnds_por_puntuacion("experimentos/experimentos_n8/almacen_fnds.json")
-    ini, fin = 10, 221
-    xSim, ySim = [], []
-    xAl, yAl = [], []
-    for i in range(max_funciones):
-        punt = random.randint(ini, fin)
-        while len(almacen[punt]) == 0:
-            punt = random.randint(ini, fin)
-        fSim = random.choice(almacen[punt])
-        while len(fSim) == 1:
-            fSim = random.choice(almacen[punt])
-        xSim.append(punt)
-        ySim.append(solapamiento(fSim))
-        
-        fAl = genera_pseudoaleatoria_puntuacion(punt)
-        while len(fAl) == 1:
-            fAl = genera_pseudoaleatoria_puntuacion(punt)
-
-        xAl.append(punt)
-        yAl.append(solapamiento(fAl))
-        debug(f"{i + 1} solapamientos simulados y pseudo-aleatorios calculados")
-
-    # Graficamos los resultados
-    fig = plt.figure(figsize = (8,5))
-    plt.plot(xSim, ySim, 'ro', alpha = 0.5, label = "Solapamiento de funciones simuladas")
-    plt.plot(xAl, yAl, 'bo', alpha = 0.5, label = "Solapamiento de funciones aleatorias")
-    title = "Comparación de puntuación y solapamiento para funciones simuladas y aleatorias"
-    plt.title(title)
-    plt.legend()
-    plt.xlabel("$\mu_x(f)$")
-    plt.ylabel("Solapamiento promedio")
-    plt.show()
-
-def grafica_intrasolapamiento_mejores(n_funciones):
+def grafica_solapamiento_mejores(n_funciones):
+    '''Genera una gráfica comparando el solapamiento de funciones las mejores funciones
+    simuladas, pseudoaleatorias y aleatorias resultantes del algoritmo genético de parejas'''
     simuladas = leer_top_funciones("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
     pseudoaleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_pseudoaleatorias_100-150_AND.json", n_funciones)
     aleatorias = leer_top_funciones("experimentos/experimentos_n8/mejores_aleatorias_100-150_AND.json", n_funciones)
@@ -65,11 +32,8 @@ def grafica_intrasolapamiento_mejores(n_funciones):
     dic["aleatorias"] = aleatorias
     grafica_comparaciones(dic, m, solapamiento, "Solapamiento")
 
-def grafica_variacion_intrasolapamiento(n_funciones):
-    parejas = leer_top_parejas("experimentos/experimentos_n8/mejores_simuladas_100-150_AND.json", n_funciones)
-    grafica_variacion_medida(parejas, m, solapamiento, combAND_with_not, combOR, "Solapamiento")
-
 def compara_solapamiento(simuladas, pseudoaleatorias, aleatorias):
+    '''Genera una gráfica que compara el solapamiento de funciones simuladas, pseudoaleatorias y aleatorias'''
     dic = {}
     dic["simuladas"] = simuladas
     dic["pseudoaleatorias"] = pseudoaleatorias
@@ -77,17 +41,8 @@ def compara_solapamiento(simuladas, pseudoaleatorias, aleatorias):
     grafica_comparaciones(dic, m, solapamiento, "Solapamiento")
 
 def matriz_confusion_umbral_solapamiento(diccionario, umbral=0.2):
-    """
-    Predice el tipo de cada punto en función de su coordenada Y y muestra la matriz de confusión.
-
-    Argumentos:
-        diccionario: dict
-            Diccionario con claves "simuladas", "pseudoaleatorias", etc.
-            Los valores son listas de tuplas con coordenadas (x, y, ...).
-        umbral: float
-            Umbral de la coordenada Y para decidir la predicción.
-            Por defecto es 0.2.
-    """
+    '''Genera la matriz de confusión de la predicción del tipo de función en base a su valor de solapamiento
+        con respecto al de la función que computa Clique'''
 
     # Nos centramos solo en simuladas y pseudoaleatorias
     tipos_validos = ["simuladas", "pseudoaleatorias"]
@@ -115,4 +70,5 @@ def matriz_confusion_umbral_solapamiento(diccionario, umbral=0.2):
     plt.show()
 
 def variacion_solapamiento():
+    '''Genera una gráfica de la variación del solapamiento de funciones simuladas tras la aplicación de puertas AND y OR'''
     grafica_variacion_medida(solapamiento, combAND_with_not, combOR, "Solapamiento", "$\\eta_s$")

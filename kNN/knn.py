@@ -1,11 +1,8 @@
-# Imports
-
-# Imports generales
 from syntactic import *
 from genetic import *
-from metricas.intra_solapamiento import *
-from metricas.equidad import *
-from metricas.sesgo import *
+from medidas.solapamiento import *
+from medidas.homogeneidad import *
+from medidas.grados_libertad import *
 from experimentos import *
 
 import csv
@@ -16,9 +13,12 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import joblib
 
-
-# Función para generar el CSV
 def genera_dataset_knn():
+    '''
+    Genera un dataset para el k-NN que predice, en base a los valores de las medidas, si una función es simulada o no.
+    Por defecto se hace un 80% de entrenamiento y un 20% de test, y se usan 6000 funciones simuladas, 3000 pseudoaleatorias y 3000 aleatorias.
+    El dataset se guarda en un CSV. Se guardan también el label_encoder, el escalador y el modelo_knn.
+    '''
     n_funciones = 6000   # Funciones de cada tipo
     ini, fin = 25, 250
     simuladas = poblacion_en_rango(ini, fin, n_funciones)
@@ -31,7 +31,7 @@ def genera_dataset_knn():
         metrica = m(f)
         solapamiento = solapamiento(f)
         homogeneidad = homogeneidad(f)
-        grados_libertad = sesgo_medio(f)
+        grados_libertad = grados_libertad(f)
         datos.append((metrica, solapamiento, homogeneidad, grados_libertad, 'simulada'))
         if (i + 1) % 10 == 0:
             print(f"{i+1} funciones simuladas añadidas al dataset")
@@ -40,7 +40,7 @@ def genera_dataset_knn():
         metrica = m(f)
         solapamiento = solapamiento(f)
         homogeneidad = homogeneidad(f)
-        grados_libertad = sesgo_medio(f)
+        grados_libertad = grados_libertad(f)
         datos.append((metrica, solapamiento, homogeneidad, grados_libertad, 'no_simulada'))
         if (i + 1) % 10 == 0:
             print(f"{i+1} funciones no-simuladas añadidas al dataset")
@@ -53,8 +53,8 @@ def genera_dataset_knn():
     print("CSV generado correctamente.")
 
 
-# Función para entrenar y evaluar el k-NN
 def knn():
+    '''Entrena y evalua el k-NN a partir de los valores del dataset previamente generado'''
     # Cargar el dataset
     df = pd.read_csv('kNN/dataset_knn.csv')
 
@@ -101,8 +101,8 @@ def knn():
     plt.title(f"Matriz de confusión")
     plt.show()
 
-# Uso del modelo ya entrenado
 def usar_modelo():
+    '''Usa el modelo de k-NN previamente entrenado'''
     modelo = joblib.load('kNN/modelo_knn.pkl')
     scaler = joblib.load('kNN/escalador.pkl')
     le = joblib.load('kNN/label_encoder.pkl')
@@ -115,9 +115,3 @@ def usar_modelo():
 
     etiqueta = le.inverse_transform(pred)
     print("Predicción:", etiqueta[0])
-
-# Generación del dataset
-# genera_dataset_knn()
-
-# Entrenamiento y evaluación
-# knn()

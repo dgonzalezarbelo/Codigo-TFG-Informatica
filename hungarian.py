@@ -1,4 +1,4 @@
-# Código basado en el trabajo de Jaime Romo González (GitHub: JaimeRG01)
+# Código del trabajo de Jaime Romo González (GitHub: JaimeRG01)
 # Repositorio original: https://github.com/JaimeRG01/TFG
 
 # Algoritmo húngaro, para calcular el problema de asignación

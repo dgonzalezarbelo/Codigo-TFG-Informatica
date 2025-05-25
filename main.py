@@ -1,14 +1,9 @@
 from syntactic import *
 from genetic import *
 from experimentos import *
-from pruebas import *
-from metricas.inter_solapamiento import *
-from metricas.intra_solapamiento import *
-from metricas.sensibilidad import *
-from metricas.sesgo import *
-from metricas.equidad import *
-from metricas.perdidas import *
-from metricas.clausulas_perfectas import *
+from medidas.solapamiento import *
+from medidas.grados_libertad import *
+from medidas.homogeneidad import *
 from kNN.knn import *
 import time
 import csv

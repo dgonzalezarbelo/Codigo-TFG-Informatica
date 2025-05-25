@@ -6,8 +6,6 @@ import random
 import math
 from random import sample
 import matplotlib.pyplot as plt
-from collections import deque
-from collections import defaultdict
 import time
 from pyeda.inter import *
 from experimentos import guardar_simulacion
@@ -107,6 +105,7 @@ def absorbs(f, g):
 
 # Reduce f. CUIDADO CON LOS NOT
 def reduce(f, k = (K * (K-1) // 2), use_not = True) :
+    # Función original de reducción (ya no se usa)
     l = len(f)
     for i in range(l) :
         f[i] = list(set(f[i]))
@@ -172,48 +171,17 @@ def pyeda_to_fnd(expr):
     return clauses
 
 def reduce_pyeda(f):
+    '''Función de reducción empleando la librería pyeda'''
     fp = fnd_to_pyeda(f)
     try:
         fpr = espresso_exprs(fp.to_dnf())[0]
-    except ValueError:  # Sale error cuando la función es idénticamente cierta o nula FIXME (creo)
+    except ValueError:
         return []
     try:
         ret = pyeda_to_fnd(fpr)
         return ret
     except ValueError:
         return []
-
-# Calcula f and g
-# Junta todos los pares de f y g 
-def combAND(f, g, k = (K * (K-1) // 2)) :
-    aux = []
-    n1 = len(f); n2 = len(g)
-    for i in range(n1) :
-        for j in range(n2) :
-            aux.append(f[i] + g[j])
-
-    return reduce(aux)
-
-# Función aleatoria
-def get_rand_fun() :
-    l = random.randint(1, len(clique))
-    aux = sample(clique, l)
-    res = []
-    for i in aux : 
-        l = random.randint(1, len(i))
-        res.append(sample(i, l))
-    return res
-
-# Función aleatoria de baja puntuación
-def get_rand_low_fun(punt) : 
-    aux = sample(clique, punt)
-    res = []
-    for i in aux : 
-        r = min(len(i), punt)
-        res.append(sample(i, r))
-        punt -= r
-        if punt == 0: break
-    return res
 
 # Función aleatoria con NOT
 def get_rand_fun_with_not() :
@@ -266,32 +234,6 @@ def combAND_with_not(f, g) :
     # return reduce(ret)
     return reduce_pyeda(ret)
 
-# Compara funciones aleatorias
-def compare_rand_fun() :
-    iter = 10000
-    fig = plt.figure(figsize = (8,5))
-    x = []
-    y = []
-    for _ in range(iter) :
-        print("Iteración número:", _+1)
-        f = reduce(get_rand_fun())
-        g = reduce(get_rand_fun())
-        h = combAND(f, g)
-        m1 = m(f)
-        m2 = m(g)
-        m3 = m(h)
-        #print(m1, m2, " -> ", m3)
-        x.append(m1); y.append(m3)
-        x.append(m2); y.append(m3)
-   
-    plt.plot(x, y, 'ro', label = '$\mu_x(f \wedge g)$')
-    plt.xlabel('$\mu_x$ antes de AND')
-    plt.ylabel('$\mu_x$ despues de AND')
-    title = "Comparación de " + str(iter) + " pares de funciones aleatorias"
-    plt.title(title)
-    plt.legend()
-    plt.show()
-
 # Compara funciones aleatorias con NOT
 def compare_rand_fun_with_not() :
     iter = 1000
@@ -322,91 +264,15 @@ def compare_rand_fun_with_not() :
     plt.legend()
     plt.show()
 
-# Genera una función con m cláusulas donde cada cláusula tiene 
-# n variables y en total usa el mínimo número de variables posibles
-def endogamic_fun(n, m, reverse = False) :
-    S = [i for i in range(1, A+1)]
-    if reverse : S.reverse()
-    #random.shuffle(S)
-    res = []
-    q = deque()
-    ini = [S[i] for i in range(n)]
-    ini.sort()
-    vis = set()
-    vis.add(tuple(ini))
-    res.append(ini)
-    q.append((ini, n))
-    cnt = 1
-    while cnt < m and len(q) > 0 : 
-        (cur, id) = q.popleft()
-        i = 0
-        if id >= len(S) : break
-        while i < len(cur) and cnt < m :
-            new = cur.copy()
-            new[i] = S[id]
-            new.sort()
-            if not tuple(new) in vis :
-                vis.add(tuple(new))
-                res.append(new.copy())
-                q.append((new.copy(), id+1))
-                cnt += 1
-            i += 1
-    res.sort()
-    return res
-
 # OR de dos funciones
 def combOR(f, g) :
     res = f + g
     # return reduce(res)
     return reduce_pyeda(res)
 
-# Simula el circuito
-def simulate_circuit() :
-    # Variables
-    S = [([[i]],1) for i in range(1, A+1)]
-    
-    or_iter = 10
-    and_iter = 10
-    max_size = len(clique)
-    limit = 300
-    iter = 100
-    xOR = []; xAND = []
-    yOR = []; yAND = []
-    for _ in range(iter) :
-        for i in range(or_iter) :
-            (f, aux) = random.choice(S)
-            (g, aux) = random.choice(S)
-            h = combOR(f, g)
-            if len(h) <= max_size and h != []: 
-                m1 = m(f); m2 = m(g); m3 = m(h)
-                if m3 == 0 : print(f, g)
-                xOR.append(m1); xOR.append(m2)
-                yOR.append(m3); yOR.append(m3)
-                S.append((h, m3))
-        for i in range(and_iter) :
-            (f, aux) = random.choice(S)
-            (g, aux) = random.choice(S)
-            h = combAND(f, g)
-            if len(h) <= max_size and h != []: 
-                m1 = m(f); m2 = m(g); m3 = m(h)
-                xAND.append(m1); xAND.append(m2)
-                yAND.append(m3); yAND.append(m3)
-                S.append((h, m3))
-        
-        print("Iteración: ", _+1)
-        S.sort(key = lambda elem : elem[1], reverse = True)
-        while len(S) > limit : S.pop()
-    
-    
-    fig = plt.figure(figsize = (8,5))
-    #plt.xlim([0,420])
-    plt.plot(xAND, yAND, 'ro')
-    plt.plot(xOR, yOR, 'bo')
-    plt.show()
-
-# Simula el circuito con NOT
+# Simula el circuito con un algoritmo genético
 def simulate_circuit_with_not() :
-    # Variables (FND, métrica, puertas)
+    # Variables (FND, puntuación, puertas) (todas las funciones están preparadas para manejar el parámetro de las puertas, aunque no se acabaron usando en el estudio)
     S1 = [([[i]], 1, 0) for i in range(1, A + 1)]
     S2 = [([[-i]], 0, 0) for i in range(1, A + 1)]
     S = S1 + S2
@@ -439,19 +305,11 @@ def simulate_circuit_with_not() :
             # Selección aleatoria
             (f, m1, p1) = random.choice(S)
             (g, m2, p2) = random.choice(S)
-
-            # # Selección por torneo de T individuos
-            # torneo1 = random.sample(S, T)
-            # torneo2 = random.sample(S, T)
-            # (f, m1, p1) = max(torneo1, key=CLAVE)
-            # (g, m2, p2) = max(torneo2, key=CLAVE)
-
             h = combOR(f, g)
             if len(h) <= max_size and h != []: 
                 # m1 = m(f); m2 = m(g)
                 m3 = m(h)
                 p3 = p1 + p2 + 1    # Puertas empleadas para computar h
-                # if m3 == 0 : print(f, g)
                 xOR.append(m1); xOR.append(m2)
                 yOR.append(m3); yOR.append(m3)
                 S.append((h, m3, p3))
@@ -459,15 +317,8 @@ def simulate_circuit_with_not() :
         for i in range(and_iter) :
             (f, m1, p1) = random.choice(S)
             (g, m2, p2) = random.choice(S)
-
-            # # Selección por torneo de T individuos
-            # torneo1 = random.sample(S, T)
-            # torneo2 = random.sample(S, T)
-            # (f, m1, p1) = max(torneo1, key=CLAVE)
-            # (g, m2, p2) = max(torneo2, key=CLAVE)
             h = combAND_with_not(f, g)
             if len(h) <= max_size and h != []: 
-                # m1 = m(f); m2 = m(g)
                 m3 = m(h)
                 xAND.append(m1); xAND.append(m2)
                 yAND.append(m3); yAND.append(m3)
@@ -499,151 +350,3 @@ def simulate_circuit_with_not() :
         plt.xlabel("$\mu_x(f)$")
         plt.ylabel("$\mu_x(f)$")
         plt.show()
-    
-# Compara funciones endogámicas de poca puntuación
-def compare_low_end_fun() :
-
-    M = len(clique)
-    tam = 100
-    tope = int(math.sqrt(M))
-    end_funs1 = [endogamic_fun(random.randint(1, K//2), random.randint(1, tope)) for _ in range(tam)]
-    end_funs2 = [endogamic_fun(random.randint(1, K//2), random.randint(1, tope), True) for _ in range(tam)]
-    #for f in end_funs1 : print(f)
-    #for f in end_funs2 : print(f)
-
-
-    x = []
-    y = []
-
-    mf1 = [m(f) for f in end_funs1]
-    mf2 = [m(f) for f in end_funs2]
-    maxpunt = {}
-    for i in range(len(end_funs1)):
-        maxpunt[mf1[i]] = 0 
-        maxpunt[mf2[i]] = 0
-
-    maxi = -1
-    for i in range(tam) :
-        print("Iteración:", i)
-        for j in range(tam) :
-            h = combAND(end_funs1[i], end_funs2[j])
-            m3 = m(h)
-            x.append(mf1[i]); y.append(m3)
-            x.append(mf2[j]); y.append(m3)
-            maxi = max(maxi, mf1[i], mf2[j])
-            maxpunt[mf1[i]] = max(maxpunt[mf1[i]], m3)
-            maxpunt[mf2[j]] = max(maxpunt[mf2[j]], m3)
-
-    plt.plot(x, y, 'ro', label = "$\mu_x(f_{s,t})$")
-    vals = [(a,b) for a,b in maxpunt.items()]
-    vals.sort(key = lambda x : x[0])
-    v1 = [i[0] for i in vals]
-    v2 = [i[1] for i in vals]
-    plt.plot(v1, v2, '-', color = 'orange', label = "Incremento máximo")
-
-    x = []
-    y = []
-    rand_low_funs = []
-    m_rand_low_funs = []
-    iter = 50
-    print("Maximo:", maxi)
-    for j in range(1, maxi+1) :
-        for i in range(iter) :    
-            f = reduce(get_rand_low_fun(j))
-            mf = m(f)
-            rand_low_funs.append(f)
-            m_rand_low_funs.append(mf)
-
-    for i in range(len(rand_low_funs)) :
-        print(i)
-        for j in range(i+1, len(rand_low_funs)) :
-
-            h = combAND(rand_low_funs[i], rand_low_funs[j])
-            m3 = m(h)
-            m1 = m_rand_low_funs[i]
-            m2 = m_rand_low_funs[j]
-            x.append(m1); y.append(m3)
-            x.append(m2); y.append(m3)
-
-    plt.plot(x, y, 'bo', label = "$\mu_x(f)$")
-    plt.legend()
-    plt.xlabel("$\mu_x$ antes de AND")
-    plt.ylabel("$\mu_x$ después de AND")
-    plt.title("$f_{s,t}$ vs $f$")
-    plt.show()
-
-# Compara funciones endogámicas de más puntuación
-def compare_big_end_fun() : 
-    
-    M = len(clique)
-    tam = 10
-    tope = M // 2
-    end_funs1 = [endogamic_fun(random.randint(1, K//2), random.randint(1, tope)) for _ in range(tam)]
-    end_funs2 = [endogamic_fun(random.randint(1, K//2), random.randint(1, tope), True) for _ in range(tam)]
-    #for f in end_funs1 : print(f)
-    #for f in end_funs2 : print(f)
-
-
-    x = []
-    y = []
-
-    mf1 = [m(f) for f in end_funs1]
-    mf2 = [m(f) for f in end_funs2]
-    maxpunt = {}
-    for i in range(len(end_funs1)):
-        maxpunt[mf1[i]] = 0 
-        maxpunt[mf2[i]] = 0
-
-    maxi = -1
-    for i in range(tam) :
-        print("Iteración:", i)
-        for j in range(tam) :
-            h = combAND(end_funs1[i], end_funs2[j])
-            m3 = m(h)
-            x.append(mf1[i]); y.append(m3)
-            x.append(mf2[j]); y.append(m3)
-            maxi = max(maxi, mf1[i], mf2[j])
-            maxpunt[mf1[i]] = max(maxpunt[mf1[i]], m3)
-            maxpunt[mf2[j]] = max(maxpunt[mf2[j]], m3)
-
-    plt.plot(x, y, 'ro', label = "$\mu_x(f_{s,t})$", zorder = 4)
-    vals = [(a,b) for a,b in maxpunt.items()]
-    vals.sort(key = lambda x : x[0])
-    v1 = [i[0] for i in vals]
-    v2 = [i[1] for i in vals]
-    plt.plot(v1, v2, '-', color = 'orange', label = "Incremento máximo", zorder = 6)
-
-    x = []
-    y = []
-    rand_low_funs = []
-    m_rand_low_funs = []
-    iter = 50
-    print("Maximo:", maxi)
-    for i in range(iter) :    
-        f = reduce(get_rand_low_fun(random.randint(1,maxi)))
-        mf = m(f)
-        rand_low_funs.append(f)
-        m_rand_low_funs.append(mf)
-
-    for i in range(len(rand_low_funs)) :
-        print(i)
-        for j in range(i+1, len(rand_low_funs)) :
-
-            h = combAND(rand_low_funs[i], rand_low_funs[j])
-            m3 = m(h)
-            m1 = m_rand_low_funs[i]
-            m2 = m_rand_low_funs[j]
-            x.append(m1); y.append(m3)
-            x.append(m2); y.append(m3)
-
-    plt.plot(x, y, 'bo', label = "$\mu_x(f)$", zorder = 8)
-    plt.legend()
-    plt.xlabel("$\mu_x$ antes de AND")
-    plt.ylabel("$\mu_x$ después de AND")
-    plt.title("$f_{s,t}$ vs $f$")
-    plt.show()
-
-
-'''LLAMAR A LO QUE SE NECESITE'''
-
-# simulate_circuit_with_not()

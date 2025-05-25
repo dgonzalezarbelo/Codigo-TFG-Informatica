@@ -1,8 +1,6 @@
 from syntactic import *
 import time
 import random
-from debug import debug
-from debug import tam_total
 from experimentos import *
 
 def particion_con_limite(suma, n, limite):
@@ -42,7 +40,6 @@ def genera_pseudoaleatoria_puntuacion(puntuacion):
 
     # Por este método, por las reducciones, es posible perder puntuación
     # No obstante, es improbable, así que se puede repetir el proceso hasta que funcione
-    # TODO De momento lo dejo así, y si se me ocurre algo mejor en el futuro lo cambio
     fallo = True
 
     # Primero elegimos la cantidad de cláusulas que queremos que tenga la función
@@ -53,8 +50,6 @@ def genera_pseudoaleatoria_puntuacion(puntuacion):
     # Teniendo en cuenta que la puntuación máxima de una cláusula es A_CLIQUE,
     # necesitamos, al menos, ceil(puntuacion // A_CLIQUE) cláusulas
     min_clausulas = (puntuacion + A_CLIQUE - 1) // A_CLIQUE
-    # debug(f"min -> {min_clausulas}")
-    # debug(f"max -> {max_clausulas}")
     while fallo:
         fallo = False
         num_clausulas = random.randint(min_clausulas, max_clausulas)
@@ -91,7 +86,7 @@ def genera_pseudoaleatoria_puntuacion(puntuacion):
         if m(fnd) != puntuacion:
             fallo = True
 
-    fnd.sort(key=lambda x: (len(x), sorted(x, key=abs)))  # TODO Lo de sorted no hace falta, es para depurar más fácilmente
+    fnd.sort(key=lambda x: (len(x), sorted(x, key=abs)))
     assert(m(fnd) == puntuacion)
     return fnd
 
@@ -106,22 +101,6 @@ def poblacion_inicial_pseudoaleatoria(ini, fin, n):
         f = genera_pseudoaleatoria_puntuacion(punt)
         ret.append([f, punt])
     return ret
-    # ret = []
-    # for i in range(1, n + 1):
-    #     punt1 = random.randint(ini, fin)
-    #     punt2 = random.randint(ini, fin)
-    #     f1 = get_random_fnd_puntuacion(punt1)
-    #     f2 = get_random_fnd_puntuacion(punt2)
-    #     if puerta == 'OR':
-    #         incremento = m(combOR(f1, f2)) - max(punt1, punt2)
-    #     elif puerta == 'AND':
-    #         incremento = m(combAND_with_not(f1, f2)) - max(punt1, punt2)
-    #     else:
-    #         raise ValueError("La puerta debe ser OR o AND")
-    #     # ret.append([[f1, punt1], [f2, punt2], incremento])
-    #     if i % 10 == 0:
-    #         print(f"{i} parejas de funciones generadas")
-    # return ret
 
 def mutacion_intercambio(f, g):
     '''Función que intercambia dos cláusulas aleatorias de dos FNDs'''
@@ -145,32 +124,13 @@ def mutacion_negacion(f):
 
 def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
     '''
-    Algoritmo genético para buscar pares de funciones con puntuaciones en un rango dado
+    Algoritmo genético para buscar parejas de funciones con puntuaciones en un rango dado
     que generen el máximo incremento de la métrica
 
-    Parámetros: TODO Dejar esto más limpio, por ahora solo lo pongo para ubicarme yo con el tema
-        Rango: par de enteros indicando el rango de puntuaciones de las funciones
-        Fitness: función que evalúa "cómo de buena" es una pareja de funciones (a priori la métrica sintáctica)
-        Población inicial
-        Método de selección:
-            Selección por torneo:
-                Tamaño del torneo
-                Probabilidad de tomar al mejor
-        Método de cruce:
-            Número de cruces AND
-            Número de cruces OR
-            Elección de si es destructivo o no
-        Método de mutación:
-            Probabilidad de mutación
-            Mutación de puertas NOT:
-                Número de literales a negar
-            Mutación de intercambio de cláusulas:
-                Elección de qué cláusulas intercambiar
-
-    Genotipo: Listas de varios elementos
-        -> [FND1, puntuación(FND1)]
-        -> [FND2, puntuación(FND2)]
-        -> Incremento de puntuación
+    Genotipo: Listas de varios elementos de la forma [a, b, c]
+        -> a = [FND1, puntuación(FND1)]
+        -> b = [FND2, puntuación(FND2)]
+        -> c = Incremento de puntuación
             -> El incremento de puntuación se calcula respecto a la puntuación máxima de FND1 y FND2
     '''
 
@@ -204,9 +164,9 @@ def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
 
     # Lo primero que tenemos que conseguir es una población inicial para arrancar el algoritmo
     # Todos los siguientes tipos son diccionarios que asignan valores a cada puerta habilitada
-    #   mezcladas almacena las parejas que ya se han mezclado (para evitar repeticiones)
-    #   parejas_formadas almacena los resultados de dichas mezclas
-    #   incrementos asocia a cada función la mayor puntuación que ha alcanzado al mezclarse con otra función (inicialmente la puntuación de la propia función, pues se obtiene al mezclarla consigo mismo)
+    #   -> mezcladas almacena las parejas que ya se han mezclado (para evitar repeticiones)
+    #   -> parejas_formadas almacena los resultados de dichas mezclas
+    #   -> incrementos asocia a cada función la mayor puntuación que ha alcanzado al mezclarse con otra función (inicialmente la puntuación de la propia función, pues se obtiene al mezclarla consigo mismo)
     poblaciones, mezcladas, parejas_formadas, incrementos = {}, {}, {}, {}
     for p in PUERTAS_HABILITADAS:
         if pob_inicial == None:
@@ -228,12 +188,6 @@ def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
         prev_m[p] = max_m[p]
         for p in PUERTAS_HABILITADAS:
             for it in range(ITERACIONES[p]):
-                '''Selección por torneo de T individuos'''
-                # torneo_f = random.sample(range(len(poblaciones[p])), T)
-                # torneo_g = random.sample(range(len(poblaciones[p])), T)
-                # i_f = max(torneo_f, key=lambda i: poblaciones[p][i][1])
-                # i_g = max(torneo_g, key=lambda i: poblaciones[p][i][1])
-
                 '''Selección aleatoria'''
                 i_f = random.choice(range(len(poblaciones[p])))
                 i_g = random.choice(range(len(poblaciones[p])))
@@ -273,10 +227,6 @@ def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
                         incrementos[p].append(m_mut)
                     else:
                         mutaciones_fallidas += 1
-
-            # poblaciones[p].sort(key=CLAVE_NEG)
-            # while len(poblaciones[p]) > POPULATION_SIZE:
-            #     poblaciones[p].pop()   # Nos quedamos con los mejores
 
         # Imprimir estadísticas
         end_time = time.perf_counter()
@@ -337,42 +287,8 @@ def genetico(ini, fin, pob_inicial = None, nombre = None, mutacion = True):
     guarda_genetico(nombre, parejas_formadas, PUERTAS_HABILITADAS)
     grafica_genetico(parejas_formadas, PUERTAS_HABILITADAS)
 
-def perdida_de_puntuacion(f):
-    '''
-    Dada una función devuelve la diferencia entre el número de literales y su puntuación
-    (El número de literales sería la puntuación máxima en el caso de un matching perfecto)
-    '''
-    literales = 0
-    f = reduce(f)
-    for claus in f:
-        literales += len(claus)
-    return literales - m(f)
-
-def grafica_perdidas(funciones):
-    '''
-    Funciones es una lista donde el índice es la puntuación
-    y cada elemento es una lista de funciones con dicha puntuación
-    '''
-    por_punt = [[] for _ in range(len(funciones))]
-    xs, ys = [], []
-    for punt, lista in enumerate(funciones):
-        debug(punt)
-        for f in lista:
-            xs.append(punt)
-            ys.append(perdida_de_puntuacion(f))
-
-    fig = plt.figure(figsize = (8,5))
-    plt.plot(xs, ys, 'ro', alpha = 0.5)
-    # plt.plot(xOR, yOR, 'bo', alpha = 0.5, label = "Incremento con OR")
-    title = "Relación entre puntuación y exceso de literales"
-    plt.title(title)
-    # plt.legend()
-    plt.xlabel("Puntuación")
-    plt.ylabel("Exceso de literales")
-    # plt.savefig(os.path.join(ruta, "graficaAND.png"))
-    plt.show()
-
 def genera_aleatorias():
+    '''Genera num_funciones funciones aleatorias y las guarda en el almacén de funciones aleatorias'''
     num_funciones = 1000
     funciones = [[] for _ in range(M_CLIQUE + 1)]
     for i in range(1, num_funciones + 1):
@@ -381,52 +297,20 @@ def genera_aleatorias():
             f = genera_funcion_aleatoria()
             m_f = m(f)
         print(f"Función con puntuación {m_f} generada")
-        funciones[m_f].append([f, 0])   # TODO Lo del 0 es una cutrada pero es que tengo todo con lo de las puertas
-        if i % 1000 == 0:
-            debug(f"{i} funciones aleatorias generadas")
+        funciones[m_f].append([f, 0])
     guardar_funciones("experimentos/experimentos_n8/aleatorias_temp.json", funciones)
     almacena_fnds("experimentos/experimentos_n8/aleatorias_temp.json", "experimentos/experimentos_n8/almacen_aleatorias.json")
 
 def obtener_mejores_pseudoaleatorias(ini, fin):
+    '''Ejecuta el algoritmo genético de parejas con una población inicial de funciones pseudoaleatorias'''
     genetico(ini, fin, nombre=f"mejores_pseudoaleatorias_{ini}-{fin}", mutacion=True)
 
 def obtener_mejores_aleatorias(ini, fin):
+    '''Ejecuta el algoritmo genético de parejas con una población inicial de funciones aleatorias'''
     pob_inicial = funciones_de_almacen_en_rango(ini, fin, "experimentos/experimentos_n8/almacen_aleatorias.json")
     genetico(ini, fin, pob_inicial, nombre=f"mejores_aleatorias_{ini}-{fin}", mutacion=True)
 
-
 def obtener_mejores_simuladas(ini, fin):
+    '''Ejecuta el algoritmo genético de parejas con una población inicial de funciones simuladas'''
     pob_inicial = funciones_de_almacen_en_rango(ini, fin)
     genetico(ini, fin, pob_inicial, nombre=f"mejores_simuladas_{ini}-{fin}", mutacion=False)
-
-def compara_productividad_simuladas_pseudoaleatorias():
-    n_funciones = 300
-    simuladas = leer_fnds_por_puntuacion("experimentos/experimentos_n8/almacen_fnds.json")
-    xSim, ySim, xPseudo, yPseudo = [], [], [], []
-    for i in range(n_funciones):
-        print(f"Iteración {i + 1}")
-        p1 = random.randint(25, 250)
-        p2 = random.randint(25, 250)
-        fSim1 = random.choice(simuladas[p1])
-        fSim2 = random.choice(simuladas[p2])
-        fPseudo1 = genera_pseudoaleatoria_puntuacion(p1)
-        fPseudo2 = genera_pseudoaleatoria_puntuacion(p2)
-        fAndSim = combAND_with_not(fSim1, fSim2)
-        fAndPseudo = combAND_with_not(fPseudo1, fPseudo2)
-        mSim = m(fAndSim)
-        mPseudo = m(fAndPseudo)
-        xSim.append(p1); xSim.append(p2)
-        ySim.append(mSim); ySim.append(mSim)
-        xPseudo.append(p1); xPseudo.append(p2)
-        yPseudo.append(mPseudo); yPseudo.append(mPseudo)
-    
-    fig = plt.figure(figsize = (8,5))
-    #plt.xlim([0,420])
-    plt.plot(xSim, ySim, 'ro', alpha = 0.5, label = "Simuladas")
-    plt.plot(xPseudo, yPseudo, 'bo', alpha = 0.5, label = "Pseudoaleatorias")
-    title = "Incremento de funciones simuladas y pseudoaleatorias"
-    plt.title(title)
-    plt.legend()
-    plt.xlabel("$\mu_x(f)$")
-    plt.ylabel("$\mu_x(f)$")
-    plt.show()
