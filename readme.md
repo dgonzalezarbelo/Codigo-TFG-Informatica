@@ -32,7 +32,7 @@ Este trabajo explora la complejidad computacional del problema CLIQUE desde la p
 
 Este proyecto está bajo la licencia MIT. Para más detalles, consulta el archivo [LICENSE](./LICENSE).
 
-# Bachelor's thesis: Study of circuit complexity for the problem CLIQUE
+# Bachelor's thesis: Study of circuit complexity for the CLIQUE problem
 
 This repository contains the code for my Computer Science Bachelor's Thesis at Universidad Complutense de Madrid (academic year 2024–2025).
 
